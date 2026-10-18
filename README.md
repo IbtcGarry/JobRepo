@@ -6,7 +6,7 @@ A job board for job seekers and employers (inspired by LinkedIn and YC's Work at
 - `functions/` — Appwrite Functions (TypeScript / Node.js)
 - `appwrite.json` — Appwrite project config (tables, buckets, functions)
 
-See [ROADMAP.md](ROADMAP.md) for progress.
+See [CHECKLIST.md](CHECKLIST.md) for what is done and not done, and [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ## Run locally
 
