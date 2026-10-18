@@ -1,16 +1,26 @@
 <header class="topbar">
-  <a routerLink="/" class="brand">JobTest</a>
-  <nav>
-    @if (auth.user(); as user) {
-      <a routerLink="/account">{{ user.name || 'Account' }}</a>
-      <button class="link" (click)="logout()">Log out</button>
-    } @else {
-      <a routerLink="/login">Log in</a>
-      <a routerLink="/signup" class="btn btn-sm">Sign up</a>
-    }
-  </nav>
+  <div class="topbar-inner">
+    <a routerLink="/" class="brand">
+      <span class="logo">J</span>
+      <span>JobTest</span>
+    </a>
+    <nav class="links">
+      <a routerLink="/" fragment="jobs">Jobs</a>
+      <a routerLink="/" fragment="jobs">Companies</a>
+      <a routerLink="/" fragment="jobs">For founders</a>
+    </nav>
+    <nav class="session">
+      @if (auth.user(); as user) {
+        <a routerLink="/account">{{ user.name || 'Account' }}</a>
+        <button class="link" (click)="logout()">Log out</button>
+      } @else {
+        <a routerLink="/login">Log in</a>
+        <a routerLink="/signup" class="btn btn-sm">Sign up</a>
+      }
+    </nav>
+  </div>
 </header>
 
-<main class="container">
+<main>
   <router-outlet />
 </main>

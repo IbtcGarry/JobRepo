@@ -1,0 +1,80 @@
+<section class="hero">
+  <div class="wrap">
+    @if (auth.user(); as user) {
+      <p class="eyebrow">Welcome back, {{ user.name || user.email }}</p>
+      @if (!user.emailVerification) {
+        <p class="notice">Please verify your email. <a routerLink="/verify-email">Resend link</a></p>
+      }
+    } @else {
+      <p class="eyebrow">Work at a startup</p>
+    }
+    <h1>Find your next job at a company that's just getting started.</h1>
+    <p class="lede">One profile. Hundreds of early-stage founders. See salary and equity up front.</p>
+
+    @if (!auth.user()) {
+      <div class="actions">
+        <a class="btn" routerLink="/signup">Get started</a>
+        <a class="btn btn-outline" routerLink="/login">Log in</a>
+      </div>
+    }
+
+    <dl class="stats">
+      <div><dt>1,200+</dt><dd>open roles</dd></div>
+      <div><dt>480</dt><dd>startups hiring</dd></div>
+      <div><dt>100%</dt><dd>salary transparency</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="jobs" class="wrap board">
+  <div class="filters">
+    <input
+      type="search"
+      placeholder="Search roles, companies, locations…"
+      [value]="query()"
+      (input)="query.set($any($event.target).value)"
+    />
+    <label class="remote">
+      <input type="checkbox" [checked]="remoteOnly()" (change)="remoteOnly.set($any($event.target).checked)" />
+      Remote only
+    </label>
+  </div>
+
+  <div class="chips">
+    <button type="button" [class.active]="role() === null" (click)="role.set(null)">All</button>
+    @for (r of roles; track r) {
+      <button type="button" [class.active]="role() === r" (click)="role.set(r)">{{ r }}</button>
+    }
+  </div>
+
+  <p class="count">{{ jobs().length }} {{ jobs().length === 1 ? 'job' : 'jobs' }}</p>
+
+  <ul class="jobs">
+    @for (job of jobs(); track job.id) {
+      <li class="job">
+        <div class="mark">{{ job.company[0] }}</div>
+        <div class="info">
+          <div class="company">
+            <strong>{{ job.company }}</strong>
+            <span class="batch">{{ job.batch }}</span>
+            <span class="muted">· {{ job.tagline }}</span>
+          </div>
+          <h3>{{ job.title }}</h3>
+          <div class="meta">
+            <span>{{ job.location }}</span>
+            <span>{{ job.salary }}</span>
+            <span>{{ job.equity }} equity</span>
+          </div>
+        </div>
+        <div class="side">
+          <span class="muted small">{{ job.posted }}</span>
+          <a class="btn btn-sm" [routerLink]="auth.user() ? '/account' : '/signup'">Apply</a>
+        </div>
+      </li>
+    } @empty {
+      <li class="empty muted">No jobs match those filters.</li>
+    }
+  </ul>
+</section>
+
+<footer class="wrap footer muted small">© 2026 JobTest</footer>

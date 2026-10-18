@@ -12,6 +12,11 @@ Stack: **Angular (TypeScript) → Appwrite (Auth, Database, Storage, Functions) 
 - [x] Add Vercel domain as a Web platform in Appwrite
 - [x] Deploy to Vercel as **JobTest** (https://jobtest-beta.vercel.app)
 
+## Front page
+- [x] YC-style landing page + job board layout (ported from Lovable "Startup Career Hub")
+- [x] Search, remote-only filter, role filters (on sample jobs)
+- [ ] Swap sample jobs for the Appwrite `jobs` table (Steps 4–5)
+
 ## Step 2 — Login system
 - [x] `AuthService` (current user signal, login, signup, logout)
 - [x] `/signup` and `/login` pages

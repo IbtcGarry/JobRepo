@@ -1,32 +1,54 @@
 .topbar {
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.topbar-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  max-width: 960px;
+  gap: 24px;
+  max-width: 72rem;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: 16px;
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.125rem;
   color: var(--text);
   text-decoration: none;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: #fff;
+}
+
 nav {
   display: flex;
   align-items: center;
   gap: 20px;
+  font-size: 0.875rem;
 
   a:not(.btn) {
-    color: var(--text);
+    color: var(--muted);
     text-decoration: none;
+    &:hover { color: var(--text); }
   }
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 16px 64px;
+.links { margin-left: 8px; }
+.session { margin-left: auto; }
+
+@media (max-width: 640px) {
+  .links { display: none; }
 }
