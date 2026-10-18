@@ -8,7 +8,7 @@ Stack: **Angular (TypeScript) → Appwrite (Auth, Database, Storage, Functions) 
 - [x] Install Appwrite SDK and shared client (`frontend/src/app/core/appwrite.ts`)
 - [x] Add `appwrite.json` and `functions/` folder
 - [x] Add Vercel config (`vercel.json`)
-- [ ] Create Appwrite Cloud project and add its ID to `environment.ts` / `appwrite.json`
+- [x] Create Appwrite Cloud project (JobTesting, Frankfurt) and add its ID to `environment.ts` / `appwrite.json`
 - [ ] Add Vercel domain as a Web platform in Appwrite
 - [x] Deploy to Vercel as **JobTest** (https://jobtest-beta.vercel.app)
 

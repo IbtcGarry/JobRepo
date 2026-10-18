@@ -1,7 +1,7 @@
 {
-  "projectId": "REPLACE_WITH_PROJECT_ID",
-  "projectName": "JobTest",
-  "endpoint": "https://cloud.appwrite.io/v1",
+  "projectId": "6ad439e7002ab77dd81d",
+  "projectName": "JobTesting",
+  "endpoint": "https://fra.cloud.appwrite.io/v1",
   "tablesDB": [],
   "tables": [],
   "functions": [],

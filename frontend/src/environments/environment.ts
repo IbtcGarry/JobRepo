@@ -3,7 +3,7 @@
 // Project -> Settings -> API credentials.
 export const environment = {
   appwrite: {
-    endpoint: 'https://cloud.appwrite.io/v1',
-    projectId: 'REPLACE_WITH_PROJECT_ID',
+    endpoint: 'https://fra.cloud.appwrite.io/v1',
+    projectId: '6ad439e7002ab77dd81d',
   },
 };
