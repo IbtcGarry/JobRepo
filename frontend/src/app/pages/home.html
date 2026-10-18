@@ -1,10 +1,7 @@
 <section class="hero">
   <div class="wrap">
     @if (auth.user(); as user) {
-      <p class="eyebrow">Welcome back, {{ user.name || user.email }}</p>
-      @if (!user.emailVerification) {
-        <p class="notice">Please verify your email. <a routerLink="/verify-email">Resend link</a></p>
-      }
+      <p class="eyebrow">Welcome back, {{ user.name }}</p>
     } @else {
       <p class="eyebrow">Work at a startup</p>
     }
@@ -18,11 +15,6 @@
       </div>
     }
 
-    <dl class="stats">
-      <div><dt>1,200+</dt><dd>open roles</dd></div>
-      <div><dt>480</dt><dd>startups hiring</dd></div>
-      <div><dt>100%</dt><dd>salary transparency</dd></div>
-    </dl>
   </div>
 </section>
 
@@ -72,7 +64,7 @@
         </div>
       </li>
     } @empty {
-      <li class="empty muted">No jobs match those filters.</li>
+      <li class="empty muted">{{ total ? 'No jobs match those filters.' : 'No jobs posted yet.' }}</li>
     }
   </ul>
 </section>

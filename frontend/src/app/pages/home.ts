@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../core/auth.service';
-import { JobRole, ROLES, SAMPLE_JOBS } from '../data/sample-jobs';
+import { JOBS, JobRole, ROLES } from '../data/jobs';
 
 @Component({
   selector: 'app-home',
@@ -14,6 +14,7 @@ export class Home {
   protected readonly auth = inject(AuthService);
 
   protected readonly roles = ROLES;
+  protected readonly total = JOBS.length;
   protected readonly query = signal('');
   protected readonly remoteOnly = signal(false);
   protected readonly role = signal<JobRole | null>(null);
@@ -21,7 +22,7 @@ export class Home {
   protected readonly jobs = computed(() => {
     const q = this.query().trim().toLowerCase();
     const role = this.role();
-    return SAMPLE_JOBS.filter(
+    return JOBS.filter(
       (job) =>
         (!role || job.role === role) &&
         (!this.remoteOnly() || job.remote) &&

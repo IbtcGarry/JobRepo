@@ -34,16 +34,6 @@
 
 .actions { display: flex; gap: 12px; margin-top: 32px; }
 
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 48px;
-  margin: 48px 0 0;
-
-  dt { font-family: var(--font-display); font-size: 1.875rem; font-weight: 700; }
-  dd { margin: 0; color: var(--muted); font-size: 0.875rem; }
-}
-
 .board { padding-top: 40px; padding-bottom: 64px; }
 
 .filters {

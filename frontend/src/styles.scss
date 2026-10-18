@@ -81,12 +81,22 @@ button.link { background: none; border: 0; padding: 0; font: inherit; color: var
   }
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 0.875rem;
-  &::before, &::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+
+.profile {
+  max-width: 640px;
+  h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 40px 0 0; }
+
+  form { display: flex; flex-direction: column; gap: 14px; }
+  label:not(.btn) { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+  input:not([type='file']), textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    font: inherit;
+    &:focus { outline: none; border-color: var(--accent); }
+  }
+  textarea { resize: vertical; }
 }
-.oauth { display: flex; flex-direction: column; gap: 8px; }
+.resume-actions { display: flex; align-items: center; gap: 16px; }
+.btn.disabled { opacity: 0.5; pointer-events: none; }

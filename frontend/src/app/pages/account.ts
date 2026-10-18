@@ -11,8 +11,7 @@ import { AuthService } from '../core/auth.service';
       <section class="page">
         <h1>Your account</h1>
         <dl class="details">
-          <dt>Name</dt><dd>{{ user.name || '—' }}</dd>
-          <dt>Email</dt><dd>{{ user.email }} {{ user.emailVerification ? '(verified)' : '(not verified)' }}</dd>
+          <dt>Username</dt><dd>{{ user.name }}</dd>
           <dt>Member since</dt><dd>{{ user.$createdAt | date: 'mediumDate' }}</dd>
         </dl>
       </section>

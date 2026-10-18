@@ -2,12 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
-import { AuthService, errorMessage } from '../../core/auth.service';
-import { OAuthButtons } from './oauth-buttons';
+import { AuthService, USERNAME_PATTERN, errorMessage } from '../../core/auth.service';
 
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule, RouterLink, OAuthButtons],
+  imports: [ReactiveFormsModule, RouterLink],
   template: `
     <section class="auth-card">
       <h1>Create your account</h1>
@@ -16,8 +15,11 @@ import { OAuthButtons } from './oauth-buttons';
       @if (error()) { <p class="error">{{ error() }}</p> }
 
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <label>Full name <input formControlName="name" autocomplete="name" /></label>
-        <label>Email <input type="email" formControlName="email" autocomplete="email" /></label>
+        <label>
+          Username
+          <input formControlName="username" autocomplete="username" autocapitalize="none" spellcheck="false" />
+          <span class="small muted">3–30 characters: lowercase letters, numbers, . _ -</span>
+        </label>
         <label>
           Password
           <input type="password" formControlName="password" autocomplete="new-password" />
@@ -28,8 +30,6 @@ import { OAuthButtons } from './oauth-buttons';
         </button>
       </form>
 
-      <app-oauth-buttons />
-
       <p class="muted center">Already have an account? <a routerLink="/login">Log in</a></p>
     </section>
   `,
@@ -39,8 +39,7 @@ export class Signup {
   private readonly router = inject(Router);
 
   protected readonly form = inject(NonNullableFormBuilder).group({
-    name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    username: ['', [Validators.required, Validators.pattern(USERNAME_PATTERN)]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
   protected readonly busy = signal(false);
@@ -50,9 +49,9 @@ export class Signup {
     this.busy.set(true);
     this.error.set('');
     try {
-      const { name, email, password } = this.form.getRawValue();
-      await this.auth.signup(name, email, password);
-      await this.router.navigateByUrl('/verify-email');
+      const { username, password } = this.form.getRawValue();
+      await this.auth.signup(username, password);
+      await this.router.navigateByUrl('/');
     } catch (err) {
       this.error.set(errorMessage(err));
     } finally {

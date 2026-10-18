@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { AppwriteException, ID, Models, OAuthProvider } from 'appwrite';
+import { AppwriteException, ID, Models } from 'appwrite';
 
 import { account } from './appwrite';
 
@@ -19,15 +19,15 @@ export class AuthService {
     }
   }
 
-  async signup(name: string, email: string, password: string): Promise<void> {
-    await account.create({ userId: ID.unique(), email, password, name });
+  async signup(username: string, password: string): Promise<void> {
+    const email = usernameToEmail(username);
+    await account.create({ userId: ID.unique(), email, password, name: username.trim() });
     await account.createEmailPasswordSession({ email, password });
-    await this.sendVerification();
     await this.load();
   }
 
-  async login(email: string, password: string): Promise<void> {
-    await account.createEmailPasswordSession({ email, password });
+  async login(username: string, password: string): Promise<void> {
+    await account.createEmailPasswordSession({ email: usernameToEmail(username), password });
     await this.load();
   }
 
@@ -35,35 +35,25 @@ export class AuthService {
     await account.deleteSession({ sessionId: 'current' });
     this._user.set(null);
   }
+}
 
-  loginWithOAuth(provider: OAuthProvider): void {
-    account.createOAuth2Session({
-      provider,
-      success: `${location.origin}/`,
-      failure: `${location.origin}/login?error=oauth`,
-    });
-  }
+/** Usernames: 3–30 lowercase letters, numbers, dots, dashes or underscores. */
+export const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
 
-  async sendVerification(): Promise<void> {
-    await account.createVerification({ url: `${location.origin}/verify-email` });
-  }
-
-  async confirmVerification(userId: string, secret: string): Promise<void> {
-    await account.updateVerification({ userId, secret });
-    await this.load();
-  }
-
-  async sendPasswordReset(email: string): Promise<void> {
-    await account.createRecovery({ email, url: `${location.origin}/reset-password` });
-  }
-
-  async resetPassword(userId: string, secret: string, password: string): Promise<void> {
-    await account.updateRecovery({ userId, secret, password });
-  }
+/**
+ * Appwrite accounts need an email, so while JobTest is a test app each username
+ * maps to a placeholder address on a reserved domain that never receives mail.
+ */
+function usernameToEmail(username: string): string {
+  return `${username.trim().toLowerCase()}@jobtest.example.com`;
 }
 
 /** Turn an Appwrite error into a message safe to show in the UI. */
 export function errorMessage(err: unknown): string {
-  if (err instanceof AppwriteException) return err.message;
+  if (err instanceof AppwriteException) {
+    if (err.type === 'user_already_exists') return 'That username is taken.';
+    if (err.type === 'user_invalid_credentials') return 'Wrong username or password.';
+    return err.message;
+  }
   return 'Something went wrong. Please try again.';
 }

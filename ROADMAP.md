@@ -18,11 +18,8 @@ Stack: **Angular (TypeScript) → Appwrite (Auth, Database, Storage, Functions) 
 - [ ] Swap sample jobs for the Appwrite `jobs` table (Steps 4–5)
 
 ## Step 2 — Login system
-- [x] `AuthService` (current user signal, login, signup, logout)
-- [x] `/signup` and `/login` pages
-- [x] Email verification (`/verify-email`)
-- [x] Password reset (`/forgot-password`)
-- [ ] OAuth: Google, GitHub, LinkedIn (buttons built — enable providers in Appwrite console)
+- [x] `AuthService` (current user signal, login, signup, logout) — username + password only, no email (dummy site)
+- [x] `/signup` and `/login` pages (username + password)
 - [x] Route guards: `authGuard`, `guestGuard`
 - [ ] `employerGuard` (needs roles from Step 3)
 
