@@ -1,1 +1,87 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles: clean, minimal, YC-inspired. */
+:root {
+  --text: #111;
+  --muted: #666;
+  --border: #e5e5e5;
+  --bg: #fff;
+  --accent: #ff6600;
+  --error: #c62828;
+  --success: #2e7d32;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.02em; }
+a { color: var(--accent); }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+.center { text-align: center; }
+.error { color: var(--error); }
+.success { color: var(--success); }
+.notice { background: #fff4e5; border-radius: var(--radius); padding: 10px 14px; }
+
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  background: var(--text);
+  color: #fff;
+  font: inherit;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-outline { background: transparent; color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 0.875rem; }
+button.link { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); cursor: pointer; }
+
+.hero { padding: 12vh 0 0; max-width: 640px; }
+.hero h1 { font-size: 2.75rem; }
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+
+.page { padding-top: 32px; }
+.details { display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; }
+.details dt { color: var(--muted); }
+.details dd { margin: 0; }
+
+.auth-card {
+  max-width: 400px;
+  margin: 8vh auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  form { display: flex; flex-direction: column; gap: 14px; }
+  label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+  input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font: inherit;
+    &:focus { outline: 2px solid var(--text); outline-offset: -1px; }
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  &::before, &::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+}
+.oauth { display: flex; flex-direction: column; gap: 8px; }

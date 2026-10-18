@@ -9,16 +9,17 @@ Stack: **Angular (TypeScript) → Appwrite (Auth, Database, Storage, Functions) 
 - [x] Add `appwrite.json` and `functions/` folder
 - [x] Add Vercel config (`vercel.json`)
 - [x] Create Appwrite Cloud project (JobTesting, Frankfurt) and add its ID to `environment.ts` / `appwrite.json`
-- [ ] Add Vercel domain as a Web platform in Appwrite
+- [x] Add Vercel domain as a Web platform in Appwrite
 - [x] Deploy to Vercel as **JobTest** (https://jobtest-beta.vercel.app)
 
 ## Step 2 — Login system
-- [ ] `AuthService` (current user signal, login, signup, logout)
-- [ ] `/signup` and `/login` pages
-- [ ] Email verification (`/verify-email`)
-- [ ] Password reset (`/forgot-password`)
-- [ ] OAuth: Google, GitHub, LinkedIn
-- [ ] Route guards (`authGuard`, `employerGuard`)
+- [x] `AuthService` (current user signal, login, signup, logout)
+- [x] `/signup` and `/login` pages
+- [x] Email verification (`/verify-email`)
+- [x] Password reset (`/forgot-password`)
+- [ ] OAuth: Google, GitHub, LinkedIn (buttons built — enable providers in Appwrite console)
+- [x] Route guards: `authGuard`, `guestGuard`
+- [ ] `employerGuard` (needs roles from Step 3)
 
 ## Step 3 — Accounts (seeker / employer / both)
 - [ ] `/onboarding` — choose role(s)
