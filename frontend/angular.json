@@ -34,7 +34,9 @@
             ],
             "allowedCommonJsDependencies": [
               "json-bigint",
-              "buffer"
+              "buffer",
+              "base64-js",
+              "ieee754"
             ]
           },
           "configurations": {
