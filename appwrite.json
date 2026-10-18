@@ -1,0 +1,10 @@
+{
+  "projectId": "REPLACE_WITH_PROJECT_ID",
+  "projectName": "JobTest",
+  "endpoint": "https://cloud.appwrite.io/v1",
+  "tablesDB": [],
+  "tables": [],
+  "functions": [],
+  "buckets": [],
+  "teams": []
+}
