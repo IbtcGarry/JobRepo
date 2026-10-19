@@ -292,8 +292,9 @@ export class JobsMap implements AfterViewInit {
 
   /** "Search this area": limit the list to what's on screen now. */
   protected applyBounds() {
-    const b = this.map?.getBounds();
-    if (!b) return;
+    // A hidden map (phone list view) has no real area; keep showing every match until it's visible.
+    if (!this.map || this.mapEl().nativeElement.clientWidth === 0) return;
+    const b = this.map.getBounds();
     this.bounds.set({ south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() });
     this.movedSinceSearch.set(false);
   }
