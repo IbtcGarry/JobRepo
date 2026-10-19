@@ -34,6 +34,7 @@
             ],
             "allowedCommonJsDependencies": [
               "json-bigint",
+              "leaflet",
               "buffer",
               "base64-js",
               "ieee754"

@@ -2,9 +2,409 @@
   "projectId": "6ad439e7002ab77dd81d",
   "projectName": "JobTesting",
   "endpoint": "https://fra.cloud.appwrite.io/v1",
-  "tablesDB": [],
-  "tables": [],
+  "tablesDB": [
+    {
+      "$id": "main",
+      "name": "main",
+      "enabled": true
+    }
+  ],
+  "tables": [
+    {
+      "$id": "profiles",
+      "databaseId": "main",
+      "name": "profiles",
+      "enabled": true,
+      "rowSecurity": true,
+      "$permissions": [
+        "create(\"users\")",
+        "read(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "occupation",
+          "type": "varchar",
+          "size": 120,
+          "required": false
+        },
+        {
+          "key": "bio",
+          "type": "text",
+          "required": false
+        },
+        {
+          "key": "resumeFileId",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        },
+        {
+          "key": "resumeName",
+          "type": "varchar",
+          "size": 255,
+          "required": false
+        },
+        {
+          "key": "avatarFileId",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        },
+        {
+          "key": "companyId",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        },
+        {
+          "key": "companyRole",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "$id": "companies",
+      "databaseId": "main",
+      "name": "companies",
+      "enabled": true,
+      "rowSecurity": false,
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"users\")",
+        "update(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "bio",
+          "type": "text",
+          "required": false
+        },
+        {
+          "key": "locations",
+          "type": "varchar",
+          "size": 120,
+          "required": false,
+          "array": true
+        },
+        {
+          "key": "logoFileId",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        },
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "$id": "jobs",
+      "databaseId": "main",
+      "name": "jobs",
+      "enabled": true,
+      "rowSecurity": false,
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"users\")",
+        "update(\"users\")",
+        "delete(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "companyId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "companyName",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "title",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "role",
+          "type": "varchar",
+          "size": 40,
+          "required": true
+        },
+        {
+          "key": "location",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "description",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "workplace",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        },
+        {
+          "key": "type",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        },
+        {
+          "key": "level",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        },
+        {
+          "key": "companySize",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        },
+        {
+          "key": "salaryMin",
+          "type": "integer",
+          "required": false,
+          "min": 0,
+          "max": 10000000
+        },
+        {
+          "key": "salaryMax",
+          "type": "integer",
+          "required": false,
+          "min": 0,
+          "max": 10000000
+        },
+        {
+          "key": "equity",
+          "type": "varchar",
+          "size": 40,
+          "required": false
+        },
+        {
+          "key": "visaSponsorship",
+          "type": "boolean",
+          "required": false,
+          "default": false
+        },
+        {
+          "key": "skills",
+          "type": "varchar",
+          "size": 40,
+          "required": false,
+          "array": true
+        },
+        {
+          "key": "postedBy",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        },
+        {
+          "key": "address",
+          "type": "varchar",
+          "size": 255,
+          "required": false
+        },
+        {
+          "key": "lat",
+          "type": "float",
+          "required": false,
+          "min": -90,
+          "max": 90
+        },
+        {
+          "key": "lng",
+          "type": "float",
+          "required": false,
+          "min": -180,
+          "max": 180
+        },
+        {
+          "key": "status",
+          "type": "varchar",
+          "size": 10,
+          "required": false,
+          "default": "open"
+        },
+        {
+          "key": "postedByName",
+          "type": "varchar",
+          "size": 120,
+          "required": false
+        },
+        {
+          "key": "questions",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_company",
+          "type": "key",
+          "columns": [
+            "companyId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        },
+        {
+          "key": "by_status",
+          "type": "key",
+          "columns": [
+            "status"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "applications",
+      "databaseId": "main",
+      "name": "applications",
+      "enabled": true,
+      "rowSecurity": false,
+      "$permissions": [
+        "read(\"users\")",
+        "create(\"users\")",
+        "update(\"users\")",
+        "delete(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "jobId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "companyId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "jobTitle",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "applicantId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "applicantName",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "note",
+          "type": "text",
+          "required": false
+        },
+        {
+          "key": "resumeFileId",
+          "type": "varchar",
+          "size": 64,
+          "required": false
+        },
+        {
+          "key": "resumeName",
+          "type": "varchar",
+          "size": 255,
+          "required": false
+        },
+        {
+          "key": "status",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        },
+        {
+          "key": "answers",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_job",
+          "type": "key",
+          "columns": [
+            "jobId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        },
+        {
+          "key": "by_applicant",
+          "type": "key",
+          "columns": [
+            "applicantId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    }
+  ],
   "functions": [],
-  "buckets": [],
+  "buckets": [
+    {
+      "$id": "uploads",
+      "name": "uploads",
+      "enabled": true,
+      "fileSecurity": true,
+      "$permissions": [
+        "create(\"users\")",
+        "read(\"users\")"
+      ],
+      "maximumFileSize": 10485760,
+      "allowedFileExtensions": [
+        "pdf",
+        "doc",
+        "docx",
+        "jpg",
+        "jpeg",
+        "png",
+        "webp",
+        "gif"
+      ],
+      "compression": "none",
+      "encryption": false,
+      "antivirus": true
+    }
+  ],
   "teams": []
 }

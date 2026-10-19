@@ -6,12 +6,15 @@
     </a>
     <nav class="links">
       <a routerLink="/" fragment="jobs">Jobs</a>
-      <a routerLink="/" fragment="jobs">Companies</a>
+      <a routerLink="/companies">Companies</a>
       <a routerLink="/" fragment="jobs">For founders</a>
     </nav>
     <nav class="session">
       @if (auth.user(); as user) {
-        <a routerLink="/account">{{ user.name || 'Account' }}</a>
+        <a routerLink="/account" class="me">
+          <app-avatar [name]="user.name" [url]="profiles.avatarUrl()" />
+          {{ user.name || 'Account' }}
+        </a>
         <button class="link" (click)="logout()">Log out</button>
       } @else {
         <a routerLink="/login">Log in</a>

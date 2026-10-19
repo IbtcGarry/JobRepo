@@ -1,0 +1,137 @@
+<section class="page profile job-form">
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (!company() || notFound()) {
+    <h1>{{ company() ? 'Job not found' : 'Company not found' }}</h1>
+  } @else {
+    <p class="muted small"><a [routerLink]="['/company', id()]">{{ company()!.name }}</a></p>
+    <h1>{{ jobId() ? 'Edit job' : 'Post a job' }}</h1>
+
+    @if (error()) { <p class="error">{{ error() }}</p> }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <h2>Required</h2>
+      <label>
+        Job title
+        <input formControlName="title" maxlength="120" placeholder="e.g. Senior Virologist" />
+        @if (invalid('title')) { <span class="error small">Add a job title.</span> }
+      </label>
+
+      <label>
+        Role
+        <select formControlName="role">
+          <option value="" disabled>Choose a role</option>
+          @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+        </select>
+        @if (invalid('role')) { <span class="error small">Choose a role.</span> }
+      </label>
+
+      <div class="grid">
+        <label>
+          Salary from ($K / year)
+          <input type="number" formControlName="salaryMin" min="1" placeholder="e.g. 90" />
+          @if (invalid('salaryMin')) { <span class="error small">Add a salary.</span> }
+        </label>
+        <label>
+          Salary to ($K / year, optional)
+          <input type="number" formControlName="salaryMax" min="1" placeholder="e.g. 130" />
+          @if (submitted() && form.hasError('salaryOrder')) {
+            <span class="error small">"Salary to" must be at least "Salary from".</span>
+          }
+        </label>
+      </div>
+
+      <label>
+        Address
+        <input formControlName="address" maxlength="255" placeholder="e.g. 1600 Amphitheatre Parkway, Mountain View, CA 94043" />
+        <span class="small muted">Paste the full street address exactly as it appears on Google Maps.</span>
+        @if (invalid('address')) { <span class="error small">Add the job's street address.</span> }
+      </label>
+      <div class="address-check">
+        @if (verified(); as place) {
+          <span class="success small">✓ Found: {{ place.location }}</span>
+          <a class="small" [href]="mapsUrl(place.address)" target="_blank" rel="noopener">Open in Google Maps</a>
+        } @else {
+          <button
+            type="button"
+            class="btn btn-outline btn-sm"
+            [disabled]="checking() || !form.controls.address.value.trim()"
+            (click)="checkAddress()"
+          >
+            {{ checking() ? 'Checking…' : 'Check address' }}
+          </button>
+          @if (form.controls.address.value.trim()) {
+            <a class="small" [href]="mapsUrl(form.controls.address.value)" target="_blank" rel="noopener">Preview on Google Maps</a>
+          }
+        }
+        @if (addressError()) { <span class="error small">{{ addressError() }}</span> }
+      </div>
+
+      <label>
+        Description
+        <textarea formControlName="description" rows="8" maxlength="10000" placeholder="What the job involves, who you're looking for, and what you offer."></textarea>
+        @if (invalid('description')) { <span class="error small">Add a description.</span> }
+      </label>
+
+      <h2>More details (optional)</h2>
+      <p class="small muted">These help people find the job with the board's filters.</p>
+
+      <div class="grid">
+        <label>
+          Workplace
+          <select formControlName="workplace">
+            <option value="">—</option>
+            @for (o of workplaces; track o) { <option [value]="o">{{ o }}</option> }
+          </select>
+        </label>
+        <label>
+          Job type
+          <select formControlName="type">
+            <option value="">—</option>
+            @for (o of types; track o) { <option [value]="o">{{ o }}</option> }
+          </select>
+        </label>
+        <label>
+          Experience
+          <select formControlName="level">
+            <option value="">—</option>
+            @for (o of levels; track o) { <option [value]="o">{{ o }}</option> }
+          </select>
+        </label>
+        <label>
+          Company size
+          <select formControlName="companySize">
+            <option value="">—</option>
+            @for (o of sizes; track o) { <option [value]="o">{{ o }}</option> }
+          </select>
+        </label>
+        <label>
+          Equity
+          <input formControlName="equity" maxlength="40" placeholder="e.g. 0.5% – 1%" />
+        </label>
+        <label>
+          Skills (comma-separated)
+          <input formControlName="skills" placeholder="e.g. Virology, Biosafety, Python" />
+        </label>
+      </div>
+      <label class="check">
+        <input type="checkbox" formControlName="visaSponsorship" /> Sponsors visas
+      </label>
+
+      <h2>Screening questions (optional)</h2>
+      <p class="small muted">
+        Questions applicants answer when they apply, like on Indeed or LinkedIn. Mark a question as a
+        must-have to see at a glance who meets your requirements.
+      </p>
+      <app-question-editor [(questions)]="questions" />
+      @for (problem of questionErrors(); track problem) { <p class="error small">{{ problem }}</p> }
+
+      <div class="resume-actions">
+        <button class="btn" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : jobId() ? 'Save changes' : 'Post job' }}
+        </button>
+        <a [routerLink]="['/account']" [queryParams]="{ tab: 'company' }">Cancel</a>
+      </div>
+    </form>
+  }
+</section>

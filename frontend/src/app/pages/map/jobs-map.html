@@ -1,0 +1,132 @@
+<section class="map-search">
+  <div class="map-controls">
+    <div class="map-row">
+      <a class="back" routerLink="/" fragment="jobs" aria-label="Back to the job board">‹ Jobs</a>
+
+      <input
+        type="search"
+        class="keyword"
+        placeholder="Job title, company or skill"
+        aria-label="Search jobs"
+        [value]="filters().query"
+        (input)="setQuery($any($event.target).value)"
+      />
+
+      <form class="place" (submit)="$event.preventDefault(); findPlace()" role="search">
+        <input
+          type="search"
+          name="place"
+          placeholder="City, ZIP code or address"
+          aria-label="Search a place"
+          autocomplete="off"
+          [(ngModel)]="placeQuery"
+        />
+        <button type="submit" class="btn btn-sm" [disabled]="placeBusy()">{{ placeBusy() ? '…' : 'Search' }}</button>
+        @if (placeResults().length) {
+          <ul class="place-results" role="listbox">
+            @for (p of placeResults(); track p.lat + ',' + p.lng) {
+              <li><button type="button" role="option" (click)="goTo(p)">{{ p.label }}</button></li>
+            }
+          </ul>
+        }
+      </form>
+
+      <button type="button" class="btn btn-outline btn-sm" (click)="useMyLocation()" [disabled]="placeBusy()">◎ Near me</button>
+
+      <label class="radius" [class.disabled]="!search().near">
+        Within
+        <select [disabled]="!search().near" (change)="setRadius(+$any($event.target).value)" aria-label="Distance">
+          @for (r of radiusOptions; track r) {
+            <option [value]="r" [selected]="r === search().radius">{{ r ? r + ' mi' : 'Any distance' }}</option>
+          }
+        </select>
+      </label>
+    </div>
+    @if (placeError()) { <p class="error small">{{ placeError() }}</p> }
+
+    <app-job-filter-bar [filters]="filters()" (filtersChange)="setFilters($event)" />
+  </div>
+
+  <div class="map-split" [class.show-map]="mobileView() === 'map'">
+    <aside class="map-list" #list>
+      <div class="list-head">
+        <div>
+          <strong>{{ visible().length }} {{ visible().length === 1 ? 'job' : 'jobs' }}</strong>
+          <span class="muted"> {{ bounds() ? 'in this area' : '' }}</span>
+          @if (bounds() && matches().length > visible().length) {
+            <button type="button" class="link small" (click)="showAll()">· Show all {{ matches().length }}</button>
+          }
+        </div>
+        <label class="sort small">
+          Sort
+          <select (change)="setSort($any($event.target).value)">
+            <option value="newest" [selected]="filters().sort === 'newest'">Newest</option>
+            <option value="salary" [selected]="filters().sort === 'salary'">Highest salary</option>
+            <option value="distance" [selected]="filters().sort === 'distance'" [disabled]="!search().near">Closest</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="list-sub">
+        <label class="follow small">
+          <input type="checkbox" [checked]="followMap()" (change)="toggleFollow($any($event.target).checked)" />
+          Search as I move the map
+        </label>
+        @if (search().near; as near) {
+          <span class="near-chip small">
+            Near {{ near.label }}{{ search().radius ? ' · ' + search().radius + ' mi' : '' }}
+            <button type="button" (click)="clearPlace()" aria-label="Clear place">×</button>
+          </span>
+        }
+      </div>
+
+      @if (jobs.isLoading()) {
+        <p class="muted pad">Loading jobs…</p>
+      } @else if (jobs.error()) {
+        <p class="error pad">Couldn't load jobs.</p>
+      } @else {
+        <ul class="map-cards">
+          @for (row of visible(); track row.job.id) {
+            <li
+              [attr.data-job]="row.job.id"
+              [class.active]="hoveredId() === row.job.id || selectedId() === row.job.id"
+              (mouseenter)="hover(row.job.id)"
+              (mouseleave)="hover(null)"
+            >
+              <app-job-card [job]="row.job" [distance]="row.miles === null ? null : formatMiles(row.miles)">
+                <button type="button" class="link small" (click)="locate(row)">Show on map</button>
+                <a class="btn btn-sm" [routerLink]="['/jobs', row.job.id]">View</a>
+              </app-job-card>
+            </li>
+          } @empty {
+            <li class="empty">
+              @if (matches().length) {
+                <p>No matching jobs in this part of the map.</p>
+                <button type="button" class="btn btn-sm" (click)="showAll()">Zoom out to all {{ matches().length }} matches</button>
+              } @else if (activeCount() || filters().query || search().near) {
+                <p>No jobs match your search.</p>
+                <button type="button" class="btn btn-outline btn-sm" (click)="clearEverything()">Clear search and filters</button>
+              } @else {
+                <p class="muted">No jobs posted yet.</p>
+              }
+            </li>
+          }
+        </ul>
+        @if (unplacedCount()) {
+          <p class="muted small pad">{{ unplacedCount() }} job{{ unplacedCount() === 1 ? '' : 's' }} without a map address aren't shown.</p>
+        }
+      }
+    </aside>
+
+    <div class="map-pane">
+      <div #map class="map" role="region" aria-label="Map of jobs"></div>
+      @if (!followMap() && movedSinceSearch()) {
+        <button type="button" class="btn search-area" (click)="applyBounds()">Search this area</button>
+      }
+    </div>
+  </div>
+
+  <button type="button" class="btn view-toggle" (click)="mobileView.set(mobileView() === 'list' ? 'map' : 'list')">
+    {{ mobileView() === 'list' ? '🗺 Map' : '☰ List' }}
+  </button>
+</section>

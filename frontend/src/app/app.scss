@@ -47,6 +47,7 @@ nav {
 }
 
 .links { margin-left: 8px; }
+.me { display: flex; align-items: center; gap: 8px; }
 .session { margin-left: auto; }
 
 @media (max-width: 640px) {

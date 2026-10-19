@@ -1,32 +1,28 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../core/auth.service';
-import { JOBS, JobRole, ROLES } from '../data/jobs';
+import { JobService } from '../core/job.service';
+import { EMPTY_FILTERS, JobFilters, filterJobs } from '../data/job-filters';
+import { JobCard } from '../shared/job-card';
+import { JobFilterBar } from '../shared/job-filter-bar';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, JobCard, JobFilterBar],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
   protected readonly auth = inject(AuthService);
+  private readonly jobService = inject(JobService);
 
-  protected readonly roles = ROLES;
-  protected readonly total = JOBS.length;
-  protected readonly query = signal('');
-  protected readonly remoteOnly = signal(false);
-  protected readonly role = signal<JobRole | null>(null);
+  protected readonly allJobs = resource({ loader: () => this.jobService.list() });
+  protected readonly total = computed(() => this.allJobs.value()?.length ?? 0);
+  protected readonly filters = signal<JobFilters>(EMPTY_FILTERS);
+  protected readonly jobs = computed(() => filterJobs(this.allJobs.value() ?? [], this.filters()));
 
-  protected readonly jobs = computed(() => {
-    const q = this.query().trim().toLowerCase();
-    const role = this.role();
-    return JOBS.filter(
-      (job) =>
-        (!role || job.role === role) &&
-        (!this.remoteOnly() || job.remote) &&
-        (!q || [job.title, job.company, job.tagline, job.location].some((f) => f.toLowerCase().includes(q))),
-    );
-  });
+  protected set<K extends keyof JobFilters>(key: K, value: JobFilters[K]) {
+    this.filters.update((f) => ({ ...f, [key]: value }));
+  }
 }

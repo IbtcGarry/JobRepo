@@ -1,0 +1,103 @@
+<section class="page admin">
+  @if (data.isLoading() && !data.value()) {
+    <p class="muted">Loading…</p>
+  } @else if (data.error()) {
+    <p class="error">Couldn't load the admin page.</p>
+  } @else if (!data.value()?.company) {
+    <h1>Company not found</h1>
+  } @else if (!data.value()!.allowed) {
+    <h1>Admin</h1>
+    <p class="muted">Only company owners and managers can view this page.</p>
+    <a [routerLink]="['/company', id()]">Back to the company page</a>
+  } @else {
+    @let company = data.value()!.company!;
+    <div class="company-head">
+      <app-avatar [name]="company.name" [url]="companies.logoUrl(company.logoFileId)" size="medium" />
+      <div>
+        <p class="muted small">Admin</p>
+        <h1>{{ company.name }}</h1>
+      </div>
+      <div class="edit resume-actions">
+        <a class="btn btn-sm" [routerLink]="['/company', company.id, 'jobs', 'new']">Post a job</a>
+        <a class="btn btn-outline btn-sm" [routerLink]="['/company', company.id]">Company page</a>
+      </div>
+    </div>
+
+    <div class="tiles">
+      <div><strong>{{ summary().total }}</strong><span>Jobs</span></div>
+      <div><strong>{{ summary().open }}</strong><span>Open</span></div>
+      <div><strong>{{ summary().closed }}</strong><span>Closed</span></div>
+      <div><strong>{{ summary().applicants }}</strong><span>Applicants</span></div>
+      <div><strong>{{ summary().posters }}</strong><span>Posters</span></div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" [class.active]="view() === 'all'" (click)="view.set('all')">All ({{ summary().total }})</button>
+      <button type="button" role="tab" [class.active]="view() === 'open'" (click)="view.set('open')">Open ({{ summary().open }})</button>
+      <button type="button" role="tab" [class.active]="view() === 'closed'" (click)="view.set('closed')">Closed ({{ summary().closed }})</button>
+    </div>
+
+    @if (error()) { <p class="error">{{ error() }}</p> }
+
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Posted by</th>
+            <th>Date</th>
+            <th>Salary</th>
+            <th>Applicants</th>
+            <th>Screening</th>
+            <th>Status</th>
+            <th><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of shown(); track job.id) {
+            <tr [class.closed]="job.status === 'closed'">
+              <td>
+                <a [routerLink]="['/jobs', job.id]"><strong>{{ job.title }}</strong></a>
+                <div class="muted small">{{ job.location }}</div>
+              </td>
+              <td>{{ job.postedByName || '—' }}</td>
+              <td>{{ job.postedAt | date: 'mediumDate' }}</td>
+              <td>{{ salaryRange(job) || '—' }}</td>
+              <td>
+                <a class="btn btn-sm" [routerLink]="['/company', company.id, 'jobs', job.id, 'applicants']">
+                  View applicants ({{ count(job) }})
+                </a>
+              </td>
+              <td>
+                @if (job.questions.length) {
+                  {{ job.questions.length }} {{ job.questions.length === 1 ? 'question' : 'questions' }}
+                  @if (mustHaves(job); as n) { <div class="muted small">{{ n }} must-have{{ n === 1 ? '' : 's' }}</div> }
+                } @else {
+                  <span class="muted">None</span>
+                  <div><a class="small" [routerLink]="['/company', company.id, 'jobs', job.id, 'edit']">Add questions</a></div>
+                }
+              </td>
+              <td>
+                <span class="status" [class.open]="job.status === 'open'">{{ job.status === 'open' ? 'Open' : 'Closed' }}</span>
+                <button type="button" class="link small" [disabled]="busy() === job.id" (click)="toggleStatus(job)">
+                  {{ job.status === 'open' ? 'Close' : 'Reopen' }}
+                </button>
+              </td>
+              <td class="row-actions">
+                <a [routerLink]="['/jobs', job.id]">View</a>
+                <a [routerLink]="['/company', company.id, 'jobs', job.id, 'edit']">Edit</a>
+                <button type="button" class="link" [disabled]="busy() === job.id" (click)="remove(job)">Remove</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty muted">
+                {{ view() === 'all' ? 'No jobs posted under this company yet.' : 'No ' + view() + ' jobs.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

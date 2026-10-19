@@ -1,0 +1,100 @@
+@if (auth.user(); as user) {
+  <section class="page profile">
+    <div class="identity">
+      <app-avatar [name]="user.name" [url]="profiles.avatarUrl()" size="large" />
+      <div>
+        <h1>Your account</h1>
+        @if (!loading()) {
+          <div class="resume-actions">
+            <label class="btn btn-outline btn-sm" [class.disabled]="avatarBusy()">
+              {{ avatarBusy() ? 'Uploading…' : profiles.avatarUrl() ? 'Change photo' : 'Add profile picture' }}
+              <input #photo type="file" [accept]="avatarAccept" hidden [disabled]="avatarBusy()" (change)="uploadAvatar(photo)" />
+            </label>
+            @if (profiles.avatarUrl() && !avatarBusy()) {
+              <button type="button" class="link" (click)="removeAvatar()">Remove</button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <dl class="details">
+      <dt>Username</dt><dd>{{ user.name }}</dd>
+      <dt>Member since</dt><dd>{{ user.$createdAt | date: 'mediumDate' }}</dd>
+    </dl>
+
+    @if (error()) { <p class="error">{{ error() }}</p> }
+    @if (message()) { <p class="success">{{ message() }}</p> }
+
+    @if (loading()) {
+      <p class="muted">Loading your profile…</p>
+    } @else {
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" [class.active]="tab() === 'profile'" (click)="tab.set('profile')">Profile</button>
+        <button type="button" role="tab" [class.active]="tab() === 'company'" (click)="tab.set('company')">Company</button>
+      </div>
+
+      @if (tab() === 'company') {
+        @if (company(); as c) {
+          <div class="company-card">
+            <app-avatar [name]="c.name" [url]="companies.logoUrl(c.logoFileId)" size="large" />
+            <div>
+              <h2>{{ c.name }}</h2>
+              <p class="muted">{{ roleLabel() }}@if (c.locations.length) { · {{ c.locations[0] }} }</p>
+              <div class="resume-actions">
+                @if (canEditCompany()) {
+                  <a class="btn btn-sm" [routerLink]="['/company', c.id, 'admin']">Admin</a>
+                  <a class="btn btn-outline btn-sm" [routerLink]="['/company', c.id, 'edit']">Edit company page</a>
+                }
+                <a [routerLink]="['/company', c.id]">View page</a>
+              </div>
+            </div>
+          </div>
+          @if (canEditCompany()) {
+            <app-manage-jobs [companyId]="c.id" />
+          }
+        } @else {
+          <p class="muted">You're not part of a company yet.</p>
+        }
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <h2>Profile</h2>
+          <label>
+            Occupation
+            <input formControlName="occupation" placeholder="e.g. Software Engineer" maxlength="120" />
+          </label>
+          <label>
+            Bio
+            <textarea formControlName="bio" rows="6" maxlength="2000" placeholder="A few lines about you and what you're looking for."></textarea>
+            <span class="small muted">{{ form.controls.bio.value.length }} / 2000</span>
+          </label>
+          <div>
+            <button class="btn" type="submit" [disabled]="form.invalid || form.pristine || saving()">
+              {{ saving() ? 'Saving…' : 'Save profile' }}
+            </button>
+          </div>
+        </form>
+
+        <div class="resume">
+          <h2>Resume</h2>
+          @if (resume().resumeFileId; as fileId) {
+            <p>
+              <a [href]="resumeUrl(fileId)" target="_blank" rel="noopener">{{ resume().resumeName }}</a>
+            </p>
+          } @else {
+            <p class="muted">No resume uploaded yet.</p>
+          }
+          <div class="resume-actions">
+            <label class="btn btn-outline" [class.disabled]="uploading()">
+              {{ uploading() ? 'Uploading…' : resume().resumeFileId ? 'Replace resume' : 'Upload resume' }}
+              <input #file type="file" [accept]="accept" hidden [disabled]="uploading()" (change)="upload(file)" />
+            </label>
+            @if (resume().resumeFileId && !uploading()) {
+              <button type="button" class="link" (click)="removeResume()">Remove</button>
+            }
+          </div>
+          <p class="small muted">PDF or Word, up to 10 MB.</p>
+        </div>
+      }
+    }
+  </section>
+}
