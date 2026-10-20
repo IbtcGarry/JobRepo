@@ -1,0 +1,20 @@
+// Design tokens: every colour, the corner radius and the heading font. Change a value here
+// and the whole site follows.
+
+/* Global styles: YC "Work at a Startup" look — warm off-white, orange, square edges. */
+:root {
+  --text: oklch(12.9% 0.042 264.695);
+  --muted: oklch(55.4% 0.046 257.417);
+  --border: oklch(92.9% 0.013 255.508);
+  --bg: oklch(97.5% 0.008 80);
+  --card: #fff;
+  --surface: oklch(93% 0.01 80);
+  --hover: oklch(96.8% 0.007 247.896);
+  --accent: oklch(66% 0.2 42);
+  --accent-soft: oklch(93% 0.06 50);
+  --accent-soft-text: oklch(45% 0.15 40);
+  --error: #c62828;
+  --success: #2e7d32;
+  --radius: 0;
+  --font-display: 'Space Grotesk', sans-serif;
+}

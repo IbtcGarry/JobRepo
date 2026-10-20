@@ -1,3 +1,6 @@
+// Saves a map search (filters, place, radius, map view) into the page address and reads it
+// back, so searches can be bookmarked, shared and survive a reload. Tested in geo.spec.ts.
+
 import { EMPTY_FILTERS, JobFilters, POSTED_OPTIONS, SALARY_OPTIONS } from './job-filters';
 import { COMPANY_SIZES, JOB_TYPES, LEVELS, ROLES, WORKPLACES } from './jobs';
 import { Place, RADIUS_OPTIONS } from './geo';
@@ -13,6 +16,7 @@ export interface MapSearch {
   view: { lat: number; lng: number; zoom: number } | null;
 }
 
+/** A blank map search: no filters, no place, default view. */
 export const EMPTY_SEARCH: MapSearch = { filters: EMPTY_FILTERS, near: null, radius: 0, view: null };
 
 type Params = Record<string, string>;
@@ -75,19 +79,23 @@ export function searchFromParams(p: Partial<Params>): MapSearch {
   };
 }
 
+/** The value if it is one of the allowed choices, otherwise the fallback. */
 function oneOf(value: number, allowed: readonly number[], fallback: number): number {
   return allowed.includes(value) ? value : fallback;
 }
 
+/** Split "1.5,2,3" into exactly `count` numbers, or null if malformed. */
 function numbers(value: string | undefined, count: number): number[] | null {
   const parts = (value ?? '').split(',').map(Number);
   return parts.length === count && parts.every(Number.isFinite) ? parts : null;
 }
 
+/** True for a real latitude / longitude. */
 function validLatLng(lat: number, lng: number): boolean {
   return Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 }
 
+/** Round to a number of decimal places (keeps page addresses short). */
 function round(n: number, digits: number): number {
   return Number(n.toFixed(digits));
 }

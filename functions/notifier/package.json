@@ -1,0 +1,13 @@
+{
+  "name": "jobtest-notifier",
+  "version": "1.0.0",
+  "description": "JobTest backend (Node.js Appwrite Function): in-app notifications, job alerts and auto-closing expired jobs.",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "node-appwrite": "^30.0.1"
+  }
+}

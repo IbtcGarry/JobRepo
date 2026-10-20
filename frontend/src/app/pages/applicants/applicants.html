@@ -1,0 +1,118 @@
+<!-- Applicants for one job: a list view and a pipeline board view (a column per stage). -->
+<section class="page applicants" [class.wide]="view() === 'board'">
+  <!-- Breadcrumb back to the company's job listings and to the job -->
+  <p class="muted small">
+    <a [routerLink]="['/account']" [queryParams]="{ tab: 'company' }">Job listings</a>
+    @if (data.value()?.job; as job) { › <a [routerLink]="['/jobs', job.id]">{{ job.title }}</a> }
+  </p>
+  <div class="posted-head">
+    <h1>Applicants</h1>
+    <!-- List / Board switch -->
+    <div class="segmented" role="tablist">
+      <button type="button" role="tab" [class.active]="view() === 'list'" (click)="showView('list')">List</button>
+      <button type="button" role="tab" [class.active]="view() === 'board'" (click)="showView('board')">Pipeline board</button>
+    </div>
+  </div>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (data.isLoading()) {
+    <p class="muted">Loading applicants…</p>
+  } @else if (data.error()) {
+    <p class="error">Couldn't load applicants.</p>
+  } @else if (!data.value()?.job) {
+    <p>Job not found.</p>
+  } @else if (view() === 'list') {
+    <!-- ===== List view ===== -->
+    <p class="muted">{{ data.value()!.applicants.length }} {{ data.value()!.applicants.length === 1 ? 'applicant' : 'applicants' }}</p>
+    <ul class="job-list">
+      @for (a of data.value()!.applicants; track a.application.id) {
+        <li class="applicant">
+          <app-avatar [name]="a.application.applicantName" [url]="a.avatarUrl" size="medium" />
+          <div class="info">
+            <a [routerLink]="['/profile', a.application.applicantId]"><strong>{{ a.application.applicantName }}</strong></a>
+            @if (a.score.total) {
+              <span class="decision" [class.interview]="a.score.met === a.score.total" [class.rejected]="a.score.met < a.score.total">
+                {{ mustHaveText(a.score) }}
+              </span>
+            }
+            @if (a.application.status !== 'submitted') {
+              <span class="decision" [class]="a.application.status">{{ label(a.application.status) }}</span>
+            }
+            @if (a.profile?.occupation) { <span class="muted"> · {{ a.profile!.occupation }}</span> }
+            @if (a.profile?.bio) { <p class="bio-preview">{{ a.profile!.bio }}</p> }
+            <p class="muted small">
+              Applied {{ ago(a.application.appliedAt) }}
+              · {{ a.application.resumeFileId ? 'Resume attached' : 'No resume' }}
+            </p>
+          </div>
+          <!-- Actions: view, quick Interview / Reject, any stage, message -->
+          <div class="decide">
+            <a class="btn btn-sm" [routerLink]="[a.application.id]">View application</a>
+            <button
+              type="button"
+              class="btn btn-outline btn-sm interview"
+              [class.on]="a.application.status === 'interview'"
+              [disabled]="busy() === a.application.id"
+              [attr.aria-pressed]="a.application.status === 'interview'"
+              (click)="decide(a.application, 'interview')"
+            >
+              Interview
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline btn-sm reject"
+              [class.on]="a.application.status === 'rejected'"
+              [disabled]="busy() === a.application.id"
+              [attr.aria-pressed]="a.application.status === 'rejected'"
+              (click)="decide(a.application, 'rejected')"
+            >
+              Reject
+            </button>
+            <select class="stage-select" [disabled]="busy() === a.application.id" (change)="moveTo(a.application, $any($event.target).value)" aria-label="Stage">
+              @for (p of pipeline; track p.status) {
+                <option [value]="p.status" [selected]="p.status === a.application.status">{{ p.label }}</option>
+              }
+            </select>
+            <a class="small" [routerLink]="['/messages', a.application.applicantId]">Message</a>
+          </div>
+        </li>
+      } @empty {
+        <li class="empty muted">No one has applied yet.</li>
+      }
+    </ul>
+  } @else {
+    <!-- ===== Pipeline board: drag a card to another column, or use its stage menu ===== -->
+    <div class="board-columns">
+      @for (p of pipeline; track p.status) {
+        <div
+          class="board-column"
+          [class.drop]="dragOver() === p.status"
+          (dragover)="allowDrop($event, p.status)"
+          (dragleave)="leaveColumn(p.status)"
+          (drop)="dropOn($event, p.status)"
+        >
+          <h3>{{ p.label }} <span class="muted">{{ inStage(p.status).length }}</span></h3>
+          @for (a of inStage(p.status); track a.application.id) {
+            <div class="board-card" draggable="true" (dragstart)="startDrag($event, a.application.id)">
+              <div class="board-card-head">
+                <app-avatar [name]="a.application.applicantName" [url]="a.avatarUrl" />
+                <a [routerLink]="[a.application.id]"><strong>{{ a.application.applicantName }}</strong></a>
+              </div>
+              @if (a.profile?.occupation) { <div class="muted small">{{ a.profile!.occupation }}</div> }
+              @if (a.score.total) {
+                <div class="small" [class.success]="a.score.met === a.score.total" [class.error]="a.score.met < a.score.total">{{ mustHaveText(a.score) }}</div>
+              }
+              <select class="stage-select" [disabled]="busy() === a.application.id" (change)="moveTo(a.application, $any($event.target).value)" aria-label="Stage">
+                @for (q of pipeline; track q.status) {
+                  <option [value]="q.status" [selected]="q.status === a.application.status">{{ q.label }}</option>
+                }
+              </select>
+            </div>
+          } @empty {
+            <p class="muted small">Nobody here</p>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

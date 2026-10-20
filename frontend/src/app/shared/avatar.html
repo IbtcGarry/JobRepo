@@ -1,0 +1,6 @@
+<!-- Profile picture or logo; the first letter when there is no image. -->
+@if (url(); as src) {
+  <img [src]="src" alt="" />
+} @else {
+  {{ (name() || '?')[0].toUpperCase() }}
+}

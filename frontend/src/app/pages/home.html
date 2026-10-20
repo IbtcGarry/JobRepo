@@ -1,3 +1,4 @@
+<!-- Hero: welcome line, headline, View map, Get started / Log in -->
 <section class="hero">
   <div class="wrap">
     @if (auth.user(); as user) {
@@ -21,6 +22,7 @@
   </div>
 </section>
 
+<!-- Job board: search boxes, filter dropdowns, sort, and the job list -->
 <section id="jobs" class="wrap board">
   <div class="searchbar">
     <input
@@ -61,6 +63,7 @@
           @for (job of jobs(); track job.id) {
             <li>
               <app-job-card [job]="job">
+                <app-save-job [jobId]="job.id" />
                 <a class="btn btn-sm" [routerLink]="['/jobs', job.id]">View</a>
               </app-job-card>
             </li>

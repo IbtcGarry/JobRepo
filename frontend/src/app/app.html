@@ -1,21 +1,31 @@
+<!-- Header on every page: logo, main links, and either the signed-in user's links or Log in / Sign up. -->
 <header class="topbar">
   <div class="topbar-inner">
     <a routerLink="/" class="brand">
       <span class="logo">J</span>
       <span>JobTest</span>
     </a>
+    <!-- Main links (hidden on phones) -->
     <nav class="links">
       <a routerLink="/" fragment="jobs">Jobs</a>
+      <a routerLink="/map">Map</a>
       <a routerLink="/companies">Companies</a>
-      <a routerLink="/" fragment="jobs">For founders</a>
+      <a routerLink="/account" [queryParams]="{ tab: 'company' }">Post a job</a>
     </nav>
     <nav class="session">
       @if (auth.user(); as user) {
+        <!-- Signed in: personal links, messages, profile, settings -->
+        <a routerLink="/saved" class="hide-sm">Saved</a>
+        <a routerLink="/applications" class="hide-sm">Applications</a>
+        <a routerLink="/messages" class="with-badge" aria-label="Messages">
+          ✉︎
+          @if (messages.unread()) { <span class="badge">{{ messages.unread() }}</span> }
+        </a>
         <a routerLink="/account" class="me">
           <app-avatar [name]="user.name" [url]="profiles.avatarUrl()" />
-          {{ user.name || 'Account' }}
+          <span class="hide-sm">{{ user.name || 'Account' }}</span>
         </a>
-        <button class="link" (click)="logout()">Log out</button>
+        <a routerLink="/settings">Settings</a>
       } @else {
         <a routerLink="/login">Log in</a>
         <a routerLink="/signup" class="btn btn-sm">Sign up</a>

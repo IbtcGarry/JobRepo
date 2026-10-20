@@ -1,3 +1,6 @@
+// <app-manage-jobs>: a company's job listings on the account Company tab, with
+// View applicants (count), Edit and Remove, plus Post a job and a link to the admin page.
+
 import { Component, inject, input, resource, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -6,56 +9,26 @@ import { errorMessage } from '../core/auth.service';
 import { JobService } from '../core/job.service';
 import { JobCard } from './job-card';
 
-/** A company's job listings with Applicants / Edit / Remove, for owners and managers. */
+/** Job listings for one company; shown to its owners and managers. */
 @Component({
   selector: 'app-manage-jobs',
   imports: [RouterLink, JobCard],
-  template: `
-    <div class="posted-head">
-      <h2>Job listings</h2>
-      <div class="resume-actions">
-        <a [routerLink]="['/company', companyId(), 'admin']">See all in admin</a>
-        <a class="btn btn-sm" [routerLink]="['/company', companyId(), 'jobs', 'new']">Post a job</a>
-      </div>
-    </div>
-
-    @if (error()) { <p class="error">{{ error() }}</p> }
-
-    @if (listing.isLoading()) {
-      <p class="muted">Loading jobs…</p>
-    } @else if (listing.value()?.jobs?.length) {
-      <ul class="job-list">
-        @for (job of listing.value()!.jobs; track job.id) {
-          <li>
-            <app-job-card [job]="job">
-              <div class="manage-actions">
-                @if (job.status === 'closed') { <span class="closed-tag">Closed</span> }
-                <a class="btn btn-sm" [routerLink]="['/company', companyId(), 'jobs', job.id, 'applicants']">
-                  View applicants ({{ listing.value()!.counts[job.id] }})
-                </a>
-                <a class="btn btn-outline btn-sm" [routerLink]="['/company', companyId(), 'jobs', job.id, 'edit']">Edit</a>
-                <button type="button" class="link" [disabled]="removing() === job.id" (click)="remove(job.id)">
-                  {{ removing() === job.id ? 'Removing…' : 'Remove' }}
-                </button>
-              </div>
-            </app-job-card>
-          </li>
-        }
-      </ul>
-    } @else {
-      <p class="muted">No job listings yet.</p>
-    }
-  `,
+  templateUrl: './manage-jobs.html',
 })
 export class ManageJobs {
+  /** Which company's jobs to list. */
   readonly companyId = input.required<string>();
 
+  // Shared services this component uses.
   private readonly jobs = inject(JobService);
   private readonly applications = inject(ApplicationService);
 
+  /** ID of the job being removed, to disable its button meanwhile. */
   protected readonly removing = signal<string | null>(null);
+  /** Error message from the last failed action. */
   protected readonly error = signal('');
 
+  /** The company's jobs (open and closed) plus each job's applicant count. */
   protected readonly listing = resource({
     params: () => this.companyId(),
     loader: async ({ params }) => {
@@ -64,6 +37,7 @@ export class ManageJobs {
     },
   });
 
+  /** Remove button: delete the job and take it off the list. */
   async remove(id: string) {
     this.removing.set(id);
     this.error.set('');

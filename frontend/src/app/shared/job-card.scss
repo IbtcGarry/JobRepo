@@ -1,0 +1,16 @@
+// <app-job-card> layout: company logo, company line, title, facts, skills, buttons.
+
+:host { display: flex; align-items: center; gap: 16px; padding: 20px; }
+.logo { flex-shrink: 0; }
+.info { flex: 1; min-width: 0; }
+.company { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.875rem; }
+a { color: var(--text); text-decoration: none; &:hover { text-decoration: underline; } }
+h3 { margin: 4px 0 0; font-family: var(--font-display); font-size: 1.125rem; }
+.distance { padding: 1px 6px; background: var(--accent-soft); color: var(--accent-soft-text); font-size: 0.75rem; font-weight: 600; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; color: var(--muted); font-size: 0.875rem; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag { padding: 2px 8px; background: var(--surface); font-size: 0.75rem; }
+.side { display: flex; align-items: center; gap: 16px; }
+@media (max-width: 640px) {
+  :host { flex-direction: column; align-items: flex-start; }
+}

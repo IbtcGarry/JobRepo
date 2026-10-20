@@ -1,7 +1,10 @@
+// Applicants list for one job (/company/:id/jobs/:jobId/applicants): each person's picture,
+// occupation, bio preview and must-have badge, with View application, Interview and Reject.
+
 import { Component, inject, input, resource, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { Application, ApplicationService, ApplicationStatus } from '../../core/application.service';
+import { Application, ApplicationService, ApplicationStatus, PIPELINE, statusLabel } from '../../core/application.service';
 import { errorMessage } from '../../core/auth.service';
 import { JobService } from '../../core/job.service';
 import { ProfileService } from '../../core/profile.service';
@@ -13,92 +16,32 @@ import { Avatar } from '../../shared/avatar';
 @Component({
   selector: 'app-applicants',
   imports: [RouterLink, Avatar],
-  template: `
-    <section class="page applicants">
-      <p class="muted small">
-        <a [routerLink]="['/account']" [queryParams]="{ tab: 'company' }">Job listings</a>
-        @if (data.value()?.job; as job) { › <a [routerLink]="['/jobs', job.id]">{{ job.title }}</a> }
-      </p>
-      <h1>Applicants</h1>
-      @if (error()) { <p class="error">{{ error() }}</p> }
-
-      @if (data.isLoading()) {
-        <p class="muted">Loading applicants…</p>
-      } @else if (data.error()) {
-        <p class="error">Couldn't load applicants.</p>
-      } @else if (!data.value()?.job) {
-        <p>Job not found.</p>
-      } @else {
-        <p class="muted">{{ data.value()!.applicants.length }} {{ data.value()!.applicants.length === 1 ? 'applicant' : 'applicants' }}</p>
-        <ul class="job-list">
-          @for (a of data.value()!.applicants; track a.application.id) {
-            <li class="applicant">
-              <app-avatar [name]="a.application.applicantName" [url]="a.avatarUrl" size="medium" />
-              <div class="info">
-                <strong>{{ a.application.applicantName }}</strong>
-                @if (a.score.total) {
-                  <span class="decision" [class.interview]="a.score.met === a.score.total" [class.rejected]="a.score.met < a.score.total">
-                    {{ a.score.met === a.score.total ? 'Meets must-haves' : 'Missed ' + (a.score.total - a.score.met) + ' must-have' + (a.score.total - a.score.met === 1 ? '' : 's') }}
-                  </span>
-                }
-                @if (a.application.status !== 'submitted') {
-                  <span class="decision" [class]="a.application.status">{{ statusLabel[a.application.status] }}</span>
-                }
-                @if (a.profile?.occupation) { <span class="muted"> · {{ a.profile!.occupation }}</span> }
-                @if (a.profile?.bio) { <p class="bio-preview">{{ a.profile!.bio }}</p> }
-                <p class="muted small">
-                  Applied {{ ago(a.application.appliedAt) }}
-                  · {{ a.application.resumeFileId ? 'Resume attached' : 'No resume' }}
-                </p>
-              </div>
-              <div class="decide">
-                <a class="btn btn-sm" [routerLink]="[a.application.id]">View application</a>
-                <button
-                  type="button"
-                  class="btn btn-outline btn-sm interview"
-                  [class.on]="a.application.status === 'interview'"
-                  [disabled]="busy() === a.application.id"
-                  [attr.aria-pressed]="a.application.status === 'interview'"
-                  (click)="decide(a.application, 'interview')"
-                >
-                  Interview
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline btn-sm reject"
-                  [class.on]="a.application.status === 'rejected'"
-                  [disabled]="busy() === a.application.id"
-                  [attr.aria-pressed]="a.application.status === 'rejected'"
-                  (click)="decide(a.application, 'rejected')"
-                >
-                  Reject
-                </button>
-              </div>
-            </li>
-          } @empty {
-            <li class="empty muted">No one has applied yet.</li>
-          }
-        </ul>
-      }
-    </section>
-  `,
+  templateUrl: './applicants.html',
 })
 export class Applicants {
+  /** Company row ID from the address. */
   readonly id = input.required<string>();
+  /** Job ID from the address. */
   readonly jobId = input.required<string>();
 
+  // Shared services this page uses (inject borrows the one app-wide copy).
   private readonly jobs = inject(JobService);
   private readonly applications = inject(ApplicationService);
   private readonly profiles = inject(ProfileService);
+  /** "Applied 2d ago" helper. */
   protected readonly ago = postedAgo;
-  protected readonly statusLabel: Record<ApplicationStatus, string> = {
-    submitted: 'New',
-    interview: 'Interview',
-    rejected: 'Rejected',
-  };
+  /** Pipeline stages in order, for the stage menus and board columns. */
+  protected readonly pipeline = PIPELINE;
+  /** List or Pipeline board. */
+  protected readonly view = signal<'list' | 'board'>('list');
+  /** Board column the dragged card is over, to highlight it. */
+  protected readonly dragOver = signal<ApplicationStatus | null>(null);
+  /** ID of the application being changed, to disable its buttons meanwhile. */
   protected readonly busy = signal<string | null>(null);
+  /** Error message from the last failed action. */
   protected readonly error = signal('');
 
+  /** Loads the job, its applications, and each applicant's profile, picture and must-have score. */
   protected readonly data = resource({
     params: () => this.jobId(),
     loader: async ({ params }) => {
@@ -115,9 +58,35 @@ export class Applicants {
     },
   });
 
-  /** Mark an applicant for interview or rejected; clicking the current choice again undoes it. */
+  /** List / Pipeline board switch. */
+  protected showView(view: 'list' | 'board') {
+    this.view.set(view);
+  }
+
+  /** Stage name for a status badge. */
+  protected label(status: ApplicationStatus): string {
+    return statusLabel(status);
+  }
+
+  /** "Meets must-haves" or "Missed 2 must-haves". */
+  protected mustHaveText(score: { met: number; total: number }): string {
+    const missed = score.total - score.met;
+    return missed ? `Missed ${missed} must-have${missed === 1 ? '' : 's'}` : 'Meets must-haves';
+  }
+
+  /** Applicants currently in one pipeline stage (one board column). */
+  protected inStage(status: ApplicationStatus) {
+    return (this.data.value()?.applicants ?? []).filter((a) => a.application.status === status);
+  }
+
+  /** Interview / Reject buttons: set that stage; clicking the current choice again moves back to New. */
   async decide(application: Application, choice: Exclude<ApplicationStatus, 'submitted'>) {
-    const status: ApplicationStatus = application.status === choice ? 'submitted' : choice;
+    await this.moveTo(application, application.status === choice ? 'submitted' : choice);
+  }
+
+  /** Stage menu or a board drop: move an application to a stage (the applicant is notified). */
+  async moveTo(application: Application, status: ApplicationStatus) {
+    if (application.status === status) return;
     this.busy.set(application.id);
     this.error.set('');
     try {
@@ -136,5 +105,30 @@ export class Applicants {
     } finally {
       this.busy.set(null);
     }
+  }
+
+  /** Board: a card starts being dragged; remember which application it is. */
+  protected startDrag(event: DragEvent, applicationId: string) {
+    event.dataTransfer?.setData('text/plain', applicationId);
+  }
+
+  /** Board: let a card be dropped on this column and highlight it. */
+  protected allowDrop(event: DragEvent, status: ApplicationStatus) {
+    event.preventDefault();
+    this.dragOver.set(status);
+  }
+
+  /** Board: the dragged card left a column. */
+  protected leaveColumn(status: ApplicationStatus) {
+    if (this.dragOver() === status) this.dragOver.set(null);
+  }
+
+  /** Board: a card was dropped on a column; move that application to its stage. */
+  protected dropOn(event: DragEvent, status: ApplicationStatus) {
+    event.preventDefault();
+    this.dragOver.set(null);
+    const id = event.dataTransfer?.getData('text/plain');
+    const entry = this.data.value()?.applicants.find((a) => a.application.id === id);
+    if (entry) void this.moveTo(entry.application, status);
   }
 }

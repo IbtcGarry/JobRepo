@@ -1,0 +1,19 @@
+// <app-avatar> sizes: small (header), medium (lists), large (page headers).
+
+:host {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+:host(.medium) { width: 56px; height: 56px; font-size: 1.5rem; }
+:host(.large) { width: 96px; height: 96px; font-size: 2.5rem; }
+img { width: 100%; height: 100%; object-fit: cover; }

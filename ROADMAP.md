@@ -1,6 +1,7 @@
 # JobTest Roadmap
 
-Stack: **Angular (TypeScript) → Appwrite (Auth, Database, Storage, Functions) → Vercel**
+Stack: **Angular 21 (TypeScript) frontend → Appwrite Cloud (Auth, Database, Storage) + a Node.js
+Appwrite Function → Vercel**. Every step below is finished; see `README.md` for the full checklist.
 
 ## Step 1 — Project setup
 - [x] Create GitHub repo (`JobRepo`)
@@ -14,48 +15,49 @@ Stack: **Angular (TypeScript) → Appwrite (Auth, Database, Storage, Functions) 
 
 ## Front page
 - [x] YC-style landing page + job board layout (ported from Lovable "Startup Career Hub")
-- [x] Search, remote-only filter, role filters (on sample jobs)
-- [ ] Swap sample jobs for the Appwrite `jobs` table (Steps 4–5)
+- [x] Search and filter dropdowns, shared with the map
+- [x] Real jobs from the Appwrite `jobs` table (no sample jobs)
 
 ## Step 2 — Login system
-- [x] `AuthService` (current user signal, login, signup, logout) — username + password only, no email (dummy site)
-- [x] `/signup` and `/login` pages (username + password)
+- [x] `AuthService` — username + password only, no email (dummy site); change username / password in Settings
+- [x] `/signup` and `/login` pages
 - [x] Route guards: `authGuard`, `guestGuard`
-- [ ] `employerGuard` (needs roles from Step 3)
+- [x] `employerGuard` (company owners / managers) and `moderatorGuard` (site moderators)
 
 ## Step 3 — Accounts (seeker / employer / both)
-- [ ] `/onboarding` — choose role(s)
-- [ ] `profiles` table + seeker profile editor
-- [ ] Resume upload (Storage bucket)
-- [ ] Public profile page `/profile/:id`
-- [ ] `companies` table + Appwrite Teams for company members
-- [ ] Company create / edit / public page `/company/:slug`
-- [ ] Invite recruiters to a company team
-- [ ] `/settings`
+- [x] `/onboarding` — choose role(s); employers can create their company right away
+- [x] `profiles` table + profile editor (occupation, bio, picture)
+- [x] Resume upload (Storage bucket `uploads`)
+- [x] Public profile page `/profile/:id` (public / private setting)
+- [x] `companies` table + company members (owner / manager / member) — invites are rows, because Appwrite Teams needs real email invitations
+- [x] Company create / edit / public page `/company/:id`
+- [x] Invite recruiters to a company by username; accept / decline on the account page
+- [x] `/settings`
 
 ## Step 4 — Job posting (employer)
-- [ ] `jobs` table + permissions
-- [ ] `/employer/jobs/new` — post form with preview
-- [ ] `/employer/jobs` — list with view / applicant counts
-- [ ] Draft / open / closed status
+- [x] `jobs` table (required: title, role, salary, verified Google-Maps address, description)
+- [x] `/company/:id/jobs/new` — post form with **Preview**, screening questions, closing date
+- [x] Company admin `/company/:id/admin` — every job with views and applicant counts
+- [x] Draft / open / closed status (Save as draft, Publish, Close / Reopen)
 
 ## Step 5 — Job board (seeker)
-- [ ] `/jobs` — search + filters (role, location, remote, salary, level, skills)
-- [ ] `/jobs/:id` — job details page
-- [ ] Saved jobs
+- [x] Board search + filters (role, location, workplace, salary, level, skills, …)
+- [x] `/jobs/:id` — job details page
+- [x] `/map` — apartment-site style map search
+- [x] Saved jobs (`/saved`)
 
 ## Step 6 — Applications
-- [ ] `applications` table + permissions
-- [ ] Easy Apply with saved profile / resume
-- [ ] `/me/applications` — applicant status tracker
-- [ ] `/employer/jobs/:id/applicants` — pipeline board
+- [x] `applications` table
+- [x] Easy Apply with saved profile / resume + screening questions
+- [x] `/applications` — applicant status tracker (withdraw too)
+- [x] `/company/:id/jobs/:jobId/applicants` — list + **pipeline board** (New → Reviewing → Interview → Offer → Hired / Rejected, drag and drop)
 
 ## Step 7 — Polish & functions
-- [ ] YC-style minimal design pass (typography, white space)
-- [ ] Function: email employer on new application
-- [ ] Function: auto-close expired jobs
+- [x] YC-style minimal design pass (typography, white space, focus states)
+- [x] Function: notify the employer of a new application — **in-app notifications** (the site has no real emails)
+- [x] Function: auto-close expired jobs (hourly)
 
 ## Later
-- [ ] Messaging
-- [ ] Job alerts
-- [ ] Admin / moderation
+- [x] Messaging (`/messages`, live)
+- [x] Job alerts (save a map search; notified when a matching job is posted)
+- [x] Admin / moderation (report jobs, companies, profiles; `/admin` for moderators)

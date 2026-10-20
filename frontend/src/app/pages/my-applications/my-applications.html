@@ -1,0 +1,23 @@
+<!-- Applications the user has sent, with their stage. -->
+<section class="page">
+  <h1>My applications</h1>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+  @if (applications.isLoading() && !applications.value()) {
+    <p class="muted">Loading…</p>
+  } @else {
+    <ul class="job-list">
+      @for (a of applications.value(); track a.id) {
+        <li class="my-application">
+          <div>
+            <a [routerLink]="['/jobs', a.jobId]"><strong>{{ a.jobTitle }}</strong></a>
+            <div class="muted small">Applied {{ a.appliedAt | date: 'mediumDate' }}</div>
+          </div>
+          <span class="decision" [class]="a.status">{{ label(a.status) }}</span>
+          <button type="button" class="link small" [disabled]="busy() === a.id" (click)="withdraw(a)">Withdraw</button>
+        </li>
+      } @empty {
+        <li class="empty muted">You haven't applied to anything yet. <a routerLink="/">Find a job</a></li>
+      }
+    </ul>
+  }
+</section>

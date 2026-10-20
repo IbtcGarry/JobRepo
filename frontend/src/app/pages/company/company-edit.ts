@@ -1,3 +1,5 @@
+// Edit a company page (/company/:id/edit): name, bio, locations and logo.
+
 import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormArray, FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -6,85 +8,41 @@ import { errorMessage } from '../../core/auth.service';
 import { CompanyService, LOGO_EXTENSIONS, LOGO_MAX_BYTES } from '../../core/company.service';
 import { Avatar } from '../../shared/avatar';
 
+/** Edit company page (/company/:id/edit): name, bio, locations and logo. */
 @Component({
   selector: 'app-company-edit',
   imports: [ReactiveFormsModule, RouterLink, Avatar],
-  template: `
-    <section class="page profile">
-      @if (loading()) {
-        <p class="muted">Loading…</p>
-      } @else if (notFound()) {
-        <h1>Company not found</h1>
-      } @else {
-        <div class="identity">
-          <app-avatar [name]="form.controls.name.value" [url]="companies.logoUrl(logoFileId())" size="large" />
-          <div>
-            <h1>Edit company page</h1>
-            <label class="btn btn-outline btn-sm" [class.disabled]="logoBusy()">
-              {{ logoBusy() ? 'Uploading…' : logoFileId() ? 'Change logo' : 'Add logo' }}
-              <input #logo type="file" [accept]="accept" hidden [disabled]="logoBusy()" (change)="uploadLogo(logo)" />
-            </label>
-          </div>
-        </div>
-
-        @if (error()) { <p class="error">{{ error() }}</p> }
-        @if (message()) { <p class="success">{{ message() }}</p> }
-
-        <form [formGroup]="form" (ngSubmit)="save()">
-          <label>Company name <input formControlName="name" maxlength="120" /></label>
-
-          <label>
-            Bio
-            <textarea formControlName="bio" rows="8" maxlength="5000" placeholder="What does the company do, and what's it like to work there?"></textarea>
-            <span class="small muted">{{ form.controls.bio.value.length }} / 5000</span>
-          </label>
-
-          <fieldset class="locations-edit">
-            <legend>Locations</legend>
-            @for (control of form.controls.locations.controls; track control; let i = $index) {
-              <div class="row">
-                <input [formControl]="control" placeholder="City, country" maxlength="120" />
-                <button type="button" class="link" (click)="removeLocation(i)">Remove</button>
-              </div>
-            }
-            <div>
-              <button type="button" class="btn btn-outline btn-sm" (click)="addLocation()">+ Add location</button>
-            </div>
-          </fieldset>
-
-          <div class="resume-actions">
-            <button class="btn" type="submit" [disabled]="form.invalid || form.pristine || saving()">
-              {{ saving() ? 'Saving…' : 'Save company page' }}
-            </button>
-            <a [routerLink]="['/company', id()]">View page</a>
-          </div>
-        </form>
-      }
-    </section>
-  `,
+  templateUrl: './company-edit.html',
 })
 export class CompanyEdit implements OnInit {
+  /** Company row ID from the address (/company/:id/edit). */
   readonly id = input.required<string>();
 
+  // Shared services this page uses (inject borrows the one app-wide copy).
   protected readonly companies = inject(CompanyService);
   private readonly router = inject(Router);
   private readonly fb = inject(NonNullableFormBuilder);
 
+  /** Name (required), bio, and a growable list of locations. */
   protected readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     bio: ['', Validators.maxLength(5000)],
     locations: this.fb.array<FormControl<string>>([]),
   });
+  /** Image types the logo picker accepts. */
   protected readonly accept = LOGO_EXTENSIONS.map((ext) => '.' + ext).join(',');
 
+  // Page state: loading / not found, busy flags, the current logo, and messages.
   protected readonly loading = signal(true);
   protected readonly notFound = signal(false);
   protected readonly saving = signal(false);
   protected readonly logoBusy = signal(false);
   protected readonly logoFileId = signal<string | null>(null);
   protected readonly message = signal('');
+  /** Error message from the last failed action. */
   protected readonly error = signal('');
 
+  /** On open: load the company into the form. */
   async ngOnInit() {
     try {
       const company = await this.companies.get(this.id());
@@ -103,16 +61,19 @@ export class CompanyEdit implements OnInit {
     }
   }
 
+  /** + Add location: add a location box (optionally pre-filled). */
   protected addLocation(value = '') {
     (this.form.controls.locations as FormArray<FormControl<string>>).push(this.fb.control(value));
     this.form.markAsDirty();
   }
 
+  /** Remove one location box. */
   protected removeLocation(index: number) {
     this.form.controls.locations.removeAt(index);
     this.form.markAsDirty();
   }
 
+  /** Save company page: save name, bio and non-blank locations, then show the page. */
   async save() {
     this.saving.set(true);
     this.message.set('');
@@ -132,6 +93,7 @@ export class CompanyEdit implements OnInit {
     }
   }
 
+  /** Add / Change logo: check type and size (5 MB), then upload and replace the old logo. */
   async uploadLogo(input: HTMLInputElement) {
     const file = input.files?.[0];
     input.value = '';

@@ -1,6 +1,7 @@
-// Appwrite project settings. These are public values (safe to commit).
-// Fill in projectId and endpoint from your Appwrite Cloud console:
-// Project -> Settings -> API credentials.
+// Appwrite connection settings: the server address and the JobTesting project ID.
+// These are public values (they ship to every browser), so they are safe to commit.
+// Used by app/core/appwrite.ts.
+
 export const environment = {
   appwrite: {
     endpoint: 'https://fra.cloud.appwrite.io/v1',

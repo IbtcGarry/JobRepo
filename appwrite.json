@@ -61,9 +61,62 @@
           "type": "varchar",
           "size": 20,
           "required": false
+        },
+        {
+          "key": "username",
+          "type": "varchar",
+          "size": 40,
+          "required": false
+        },
+        {
+          "key": "roles",
+          "type": "varchar",
+          "size": 20,
+          "required": false,
+          "array": true
+        },
+        {
+          "key": "isPublic",
+          "type": "boolean",
+          "required": false,
+          "default": true
+        },
+        {
+          "key": "savedJobIds",
+          "type": "varchar",
+          "size": 64,
+          "required": false,
+          "array": true
+        },
+        {
+          "key": "siteAdmin",
+          "type": "boolean",
+          "required": false,
+          "default": false
         }
       ],
-      "indexes": []
+      "indexes": [
+        {
+          "key": "by_username",
+          "type": "key",
+          "columns": [
+            "username"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        },
+        {
+          "key": "by_company",
+          "type": "key",
+          "columns": [
+            "companyId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
     },
     {
       "$id": "companies",
@@ -258,6 +311,24 @@
           "key": "questions",
           "type": "text",
           "required": false
+        },
+        {
+          "key": "views",
+          "type": "integer",
+          "required": false,
+          "min": 0,
+          "max": 1000000000,
+          "default": 0
+        },
+        {
+          "key": "expiresAt",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "key": "alertsSentAt",
+          "type": "datetime",
+          "required": false
         }
       ],
       "indexes": [
@@ -377,9 +448,334 @@
           ]
         }
       ]
+    },
+    {
+      "$id": "notifications",
+      "databaseId": "main",
+      "name": "notifications",
+      "enabled": true,
+      "rowSecurity": true,
+      "$permissions": [
+        "create(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "userId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "text",
+          "type": "varchar",
+          "size": 300,
+          "required": true
+        },
+        {
+          "key": "link",
+          "type": "varchar",
+          "size": 300,
+          "required": false
+        },
+        {
+          "key": "read",
+          "type": "boolean",
+          "required": false,
+          "default": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_user",
+          "type": "key",
+          "columns": [
+            "userId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "messages",
+      "databaseId": "main",
+      "name": "messages",
+      "enabled": true,
+      "rowSecurity": false,
+      "$permissions": [
+        "read(\"users\")",
+        "create(\"users\")",
+        "update(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "fromId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "fromName",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "toId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "toName",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "body",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "read",
+          "type": "boolean",
+          "required": false,
+          "default": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_from",
+          "type": "key",
+          "columns": [
+            "fromId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        },
+        {
+          "key": "by_to",
+          "type": "key",
+          "columns": [
+            "toId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "invites",
+      "databaseId": "main",
+      "name": "invites",
+      "enabled": true,
+      "rowSecurity": false,
+      "$permissions": [
+        "read(\"users\")",
+        "create(\"users\")",
+        "update(\"users\")",
+        "delete(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "companyId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "companyName",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "username",
+          "type": "varchar",
+          "size": 40,
+          "required": true
+        },
+        {
+          "key": "role",
+          "type": "varchar",
+          "size": 20,
+          "required": true
+        },
+        {
+          "key": "invitedBy",
+          "type": "varchar",
+          "size": 120,
+          "required": false
+        },
+        {
+          "key": "status",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_username",
+          "type": "key",
+          "columns": [
+            "username"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        },
+        {
+          "key": "by_company",
+          "type": "key",
+          "columns": [
+            "companyId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "alerts",
+      "databaseId": "main",
+      "name": "alerts",
+      "enabled": true,
+      "rowSecurity": true,
+      "$permissions": [
+        "create(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "userId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "name",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "params",
+          "type": "text",
+          "required": true
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_user",
+          "type": "key",
+          "columns": [
+            "userId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "reports",
+      "databaseId": "main",
+      "name": "reports",
+      "enabled": true,
+      "rowSecurity": false,
+      "$permissions": [
+        "read(\"users\")",
+        "create(\"users\")",
+        "update(\"users\")"
+      ],
+      "columns": [
+        {
+          "key": "targetType",
+          "type": "varchar",
+          "size": 20,
+          "required": true
+        },
+        {
+          "key": "targetId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "targetName",
+          "type": "varchar",
+          "size": 200,
+          "required": true
+        },
+        {
+          "key": "reason",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "reporterId",
+          "type": "varchar",
+          "size": 64,
+          "required": true
+        },
+        {
+          "key": "reporterName",
+          "type": "varchar",
+          "size": 120,
+          "required": true
+        },
+        {
+          "key": "status",
+          "type": "varchar",
+          "size": 20,
+          "required": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "by_status",
+          "type": "key",
+          "columns": [
+            "status"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
     }
   ],
-  "functions": [],
+  "functions": [
+    {
+      "$id": "notifier",
+      "name": "notifier",
+      "runtime": "node-22",
+      "path": "functions/notifier",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "execute": [],
+      "interval": 60,
+      "timeout": 30,
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "rows.read",
+        "rows.write"
+      ],
+      "events": [
+        "tablesdb.main.tables.applications.rows.*.create",
+        "tablesdb.main.tables.applications.rows.*.update",
+        "tablesdb.main.tables.jobs.rows.*.create",
+        "tablesdb.main.tables.jobs.rows.*.update",
+        "tablesdb.main.tables.invites.rows.*.create"
+      ]
+    }
+  ],
   "buckets": [
     {
       "$id": "uploads",

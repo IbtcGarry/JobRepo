@@ -1,0 +1,32 @@
+<!-- Pick roles; employers can name their company to create it now. -->
+<section class="page profile onboarding">
+  <h1>Welcome, {{ auth.user()?.name }}</h1>
+  <p class="muted">What brings you to JobTest? Pick one or both — you can change this later in Settings.</p>
+
+  <!-- Role cards -->
+  <div class="role-cards">
+    <button type="button" class="role-card" [class.on]="has('seeker')" (click)="toggle('seeker')" [attr.aria-pressed]="has('seeker')">
+      <strong>I'm looking for a job</strong>
+      <span class="muted small">Build a profile, upload a resume, apply in a click, track your applications.</span>
+    </button>
+    <button type="button" class="role-card" [class.on]="has('employer')" (click)="toggle('employer')" [attr.aria-pressed]="has('employer')">
+      <strong>I'm hiring</strong>
+      <span class="muted small">Create a company page, post jobs, review applicants on a pipeline board.</span>
+    </button>
+  </div>
+
+  <!-- Employers: create a company now, or wait for an invite -->
+  @if (has('employer')) {
+    <label>
+      Company name (optional)
+      <input name="company" [(ngModel)]="companyName" maxlength="120" placeholder="e.g. Acme Labs" />
+      <span class="small muted">Leave blank if a company will invite you — invites show up on your account page.</span>
+    </label>
+  }
+
+  @if (error()) { <p class="error">{{ error() }}</p> }
+  <div class="resume-actions">
+    <button class="btn" type="button" [disabled]="saving()" (click)="finish()">{{ saving() ? 'Saving…' : 'Continue' }}</button>
+    <a routerLink="/">Skip for now</a>
+  </div>
+</section>

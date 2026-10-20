@@ -1,4 +1,6 @@
+<!-- Map search: search controls on top, then the job list beside the map; a Map / List toggle on phones (logic: jobs-map.ts). -->
 <section class="map-search">
+  <!-- Controls: keyword, place search, Near me, radius, filter dropdowns -->
   <div class="map-controls">
     <div class="map-row">
       <a class="back" routerLink="/" fragment="jobs" aria-label="Back to the job board">‹ Jobs</a>
@@ -12,7 +14,7 @@
         (input)="setQuery($any($event.target).value)"
       />
 
-      <form class="place" (submit)="$event.preventDefault(); findPlace()" role="search">
+      <form class="place" (submit)="onPlaceSubmit($event)" role="search">
         <input
           type="search"
           name="place"
@@ -47,6 +49,7 @@
     <app-job-filter-bar [filters]="filters()" (filtersChange)="setFilters($event)" />
   </div>
 
+  <!-- List (left) and map (right) -->
   <div class="map-split" [class.show-map]="mobileView() === 'map'">
     <aside class="map-list" #list>
       <div class="list-head">
@@ -72,6 +75,9 @@
           <input type="checkbox" [checked]="followMap()" (change)="toggleFollow($any($event.target).checked)" />
           Search as I move the map
         </label>
+        @if (auth.user()) {
+          <button type="button" class="link small" (click)="toggleAlertForm()">Alert me</button>
+        }
         @if (search().near; as near) {
           <span class="near-chip small">
             Near {{ near.label }}{{ search().radius ? ' · ' + search().radius + ' mi' : '' }}
@@ -80,11 +86,21 @@
         }
       </div>
 
+      <!-- Save this search as a job alert -->
+      @if (alertFormOpen()) {
+        <form class="invite-form alert-form" (submit)="saveAlert($event)">
+          <input name="alertName" [(ngModel)]="alertName" maxlength="120" placeholder="Alert name" aria-label="Alert name" />
+          <button class="btn btn-sm" type="submit" [disabled]="alertBusy() || !alertName.trim()">Save alert</button>
+        </form>
+      }
+      @if (alertMessage()) { <p class="small pad" [class.success]="!alertMessage().startsWith('!')">{{ alertMessage().replace('!', '') }}</p> }
+
       @if (jobs.isLoading()) {
         <p class="muted pad">Loading jobs…</p>
       } @else if (jobs.error()) {
         <p class="error pad">Couldn't load jobs.</p>
       } @else {
+        <!-- Job cards for the jobs inside the visible map area -->
         <ul class="map-cards">
           @for (row of visible(); track row.job.id) {
             <li
@@ -118,6 +134,7 @@
       }
     </aside>
 
+    <!-- The map itself, plus the "Search this area" button -->
     <div class="map-pane">
       <div #map class="map" role="region" aria-label="Map of jobs"></div>
       @if (!followMap() && movedSinceSearch()) {
@@ -126,7 +143,8 @@
     </div>
   </div>
 
-  <button type="button" class="btn view-toggle" (click)="mobileView.set(mobileView() === 'list' ? 'map' : 'list')">
+  <!-- Phone-only Map / List toggle -->
+  <button type="button" class="btn view-toggle" (click)="toggleMobileView()">
     {{ mobileView() === 'list' ? '🗺 Map' : '☰ List' }}
   </button>
 </section>

@@ -1,0 +1,6 @@
+<!-- Save / Saved toggle (logic: save-job-button.ts). -->
+@if (auth.user()) {
+  <button type="button" class="link save-job" [class.saved]="saved()" [disabled]="busy()" (click)="toggle()" [attr.aria-pressed]="saved()">
+    {{ saved() ? '★ Saved' : '☆ Save' }}
+  </button>
+}

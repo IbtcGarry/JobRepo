@@ -1,0 +1,21 @@
+<!-- The user's saved jobs. -->
+<section class="page">
+  <h1>Saved jobs</h1>
+  @if (jobs.isLoading() && !jobs.value()) {
+    <p class="muted">Loading…</p>
+  } @else {
+    <ul class="job-list">
+      @for (job of jobs.value(); track job.id) {
+        <li>
+          <app-job-card [job]="job">
+            @if (job.status !== 'open') { <span class="closed-tag">Closed</span> }
+            <app-save-job [jobId]="job.id" />
+            <a class="btn btn-sm" [routerLink]="['/jobs', job.id]">View</a>
+          </app-job-card>
+        </li>
+      } @empty {
+        <li class="empty muted">No saved jobs yet. Use <strong>☆ Save</strong> on any job to keep it here.</li>
+      }
+    </ul>
+  }
+</section>

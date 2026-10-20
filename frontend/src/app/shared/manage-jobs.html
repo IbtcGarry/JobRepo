@@ -1,0 +1,35 @@
+<!-- A company's job listings with View applicants, Edit and Remove (logic: manage-jobs.ts). -->
+<div class="posted-head">
+  <h2>Job listings</h2>
+  <div class="resume-actions">
+    <a [routerLink]="['/company', companyId(), 'admin']">See all in admin</a>
+    <a class="btn btn-sm" [routerLink]="['/company', companyId(), 'jobs', 'new']">Post a job</a>
+  </div>
+</div>
+
+@if (error()) { <p class="error">{{ error() }}</p> }
+
+@if (listing.isLoading()) {
+  <p class="muted">Loading jobs…</p>
+} @else if (listing.value()?.jobs?.length) {
+  <ul class="job-list">
+    @for (job of listing.value()!.jobs; track job.id) {
+      <li>
+        <app-job-card [job]="job">
+          <div class="manage-actions">
+            @if (job.status === 'closed') { <span class="closed-tag">Closed</span> }
+            <a class="btn btn-sm" [routerLink]="['/company', companyId(), 'jobs', job.id, 'applicants']">
+              View applicants ({{ listing.value()!.counts[job.id] }})
+            </a>
+            <a class="btn btn-outline btn-sm" [routerLink]="['/company', companyId(), 'jobs', job.id, 'edit']">Edit</a>
+            <button type="button" class="link" [disabled]="removing() === job.id" (click)="remove(job.id)">
+              {{ removing() === job.id ? 'Removing…' : 'Remove' }}
+            </button>
+          </div>
+        </app-job-card>
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="muted">No job listings yet.</p>
+}

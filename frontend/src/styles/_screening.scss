@@ -1,0 +1,60 @@
+// Screening questions: the editor on the job form and the answers on apply / application pages.
+
+/* Screening question editor */
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+
+  input[type='text'], input[type='number'], select, textarea {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font: inherit;
+    &:focus { outline: none; border-color: var(--accent); }
+  }
+}
+.question-head { display: flex; align-items: center; justify-content: space-between; }
+.question-tools { display: flex; gap: 12px; }
+.question-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
+.job-form .question label { font-weight: 400; }
+.job-form .question label.check { flex-direction: row; align-items: center; gap: 6px; }
+.question-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  select { max-width: 100%; padding: 6px 8px; border: 1px solid var(--border); background: var(--card); font: inherit; font-size: 0.875rem; }
+}
+
+/* Screening questions on the apply page */
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  legend { float: left; width: 100%; margin-bottom: 4px; padding: 0; font-weight: 500; }
+  &.missing { border-color: var(--error); }
+  .choices { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  label.check { flex-direction: row; align-items: center; gap: 6px; font-weight: 400; }
+  input[type='radio'] { accent-color: var(--accent); }
+}
+.profile form h2 + .answer { margin-top: 4px; }
+
+.answers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  margin: 0;
+  dt { margin-top: 10px; color: var(--muted); font-size: 0.875rem; }
+  dd { margin: 0; font-weight: 500; }
+}
+.mark { margin-left: 8px; font-size: 0.8125rem; font-weight: 600; &.ok { color: var(--success); } &.no { color: var(--error); } }
+.job-detail .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.company-head .edit { flex-wrap: wrap; justify-content: flex-end; .btn { white-space: nowrap; } }

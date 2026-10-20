@@ -1,0 +1,158 @@
+// Newer features: pipeline board, job preview, save / report buttons, onboarding, settings,
+// my applications, messages, invites, job alerts.
+
+/* ---------- Applicants: List / Pipeline board ---------- */
+.applicants.wide { max-width: 1280px; }
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  background: var(--card);
+  button { padding: 6px 14px; border: 0; background: none; font: inherit; font-size: 0.875rem; color: var(--muted); cursor: pointer; }
+  button.active { background: var(--text); color: #fff; }
+}
+.stage-select { padding: 5px 8px; border: 1px solid var(--border); background: var(--card); font: inherit; font-size: 0.8125rem; }
+.board-columns {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(210px, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.board-column {
+  min-height: 240px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: outline-color 0.1s;
+  outline: 2px dashed transparent;
+  &.drop { outline-color: var(--accent); }
+  h3 { margin: 0 0 10px; font-family: var(--font-display); font-size: 0.95rem; }
+}
+.board-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  cursor: grab;
+  a { color: var(--text); text-decoration: none; }
+}
+.board-card-head { display: flex; align-items: center; gap: 8px; }
+.decision.reviewing, .decision.offer { background: #e8efff; color: #1d4ed8; }
+.decision.hired { background: #e6f4ea; color: var(--success); }
+
+/* Job form preview */
+.job-preview {
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid var(--accent);
+  background: var(--card);
+  h2 { margin: 4px 0; font-family: var(--font-display); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag { padding: 2px 8px; background: var(--surface); font-size: 0.8125rem; }
+}
+.status.draft { background: #e8efff; color: #1d4ed8; }
+
+/* Save and Report buttons (shared/save-job-button, shared/report-button) */
+.save-job { font-weight: 600; &.saved { color: var(--accent); } }
+.report { display: inline-flex; flex-direction: column; gap: 6px; vertical-align: top; }
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+  textarea { padding: 8px 10px; border: 1px solid var(--border); background: var(--card); font: inherit; font-size: 0.875rem; }
+}
+
+/* Onboarding role cards */
+.role-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 16px 0; }
+.role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  strong { font-family: var(--font-display); font-size: 1.05rem; }
+  &:hover { border-color: var(--text); }
+  &.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--accent-soft); }
+}
+.settings label.check, .profile label.check { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; input { accent-color: var(--accent); } }
+.alert-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; a { color: var(--text); } }
+
+/* My applications, inbox, conversation */
+.my-application { display: flex; align-items: center; gap: 16px; padding: 14px 16px; > div { flex: 1; } a { color: var(--text); } }
+.conversation {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 14px 16px;
+  color: var(--text);
+  text-decoration: none;
+  &:hover { background: var(--hover); }
+  .preview { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+}
+.thread-page { max-width: 760px; h1 a { color: var(--text); text-decoration: none; } }
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 55vh;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.bubble {
+  align-self: flex-start;
+  max-width: 75%;
+  padding: 10px 12px;
+  background: var(--surface);
+  p { margin: 0 0 4px; }
+  &.mine { align-self: flex-end; background: var(--accent-soft); }
+}
+.reply {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  textarea { flex: 1; padding: 10px 12px; border: 1px solid var(--border); background: var(--card); font: inherit; resize: vertical; }
+}
+
+/* Header message badge */
+.topbar .badge, .with-badge .badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6875rem;
+  line-height: 16px;
+  text-align: center;
+}
+.conversation .badge { position: static; border-radius: 999px; padding: 0 6px; }
+.invite-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; input, select { padding: 8px 10px; border: 1px solid var(--border); background: var(--card); font: inherit; } input { flex: 1 1 200px; } }
+.alert-form { margin: 0 12px 10px; }
+
+/* Account → Company tab: site moderation box (moderators only) */
+.moderation-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  border: 1px dashed var(--border);
+  background: var(--card);
+  p { margin: 4px 0 0; }
+}

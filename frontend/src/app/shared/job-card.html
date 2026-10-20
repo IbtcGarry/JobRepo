@@ -1,0 +1,19 @@
+<!-- One job: company logo, company and time posted, title, facts, skills; buttons passed in appear on the right. -->
+<app-avatar class="logo" [name]="job().company" [url]="logoUrl()" size="medium" />
+<div class="info">
+  <div class="company">
+    <a [routerLink]="['/company', job().companyId]"><strong>{{ job().company }}</strong></a>
+    <span class="muted small">· {{ ago() }}</span>
+    @if (distance()) { <span class="distance">{{ distance() }}</span> }
+  </div>
+  <h3><a [routerLink]="['/jobs', job().id]">{{ job().title }}</a></h3>
+  <div class="meta">
+    @for (fact of facts(); track fact) { <span>{{ fact }}</span> }
+  </div>
+  @if (job().skills.length) {
+    <div class="tags">
+      @for (s of job().skills; track s) { <span class="tag">{{ s }}</span> }
+    </div>
+  }
+</div>
+<div class="side"><ng-content /></div>

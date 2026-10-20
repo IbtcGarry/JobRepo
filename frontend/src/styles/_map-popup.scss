@@ -1,0 +1,12 @@
+// Map library (Leaflet) styles and the pin popup.
+
+/* Job map (Leaflet). */
+@import 'leaflet/dist/leaflet.css';
+
+.leaflet-popup-content-wrapper { border-radius: 0; }
+.map-popup { display: flex; flex-direction: column; gap: 10px; font-family: 'DM Sans', sans-serif; }
+.map-popup-job + .map-popup-job { padding-top: 10px; border-top: 1px solid var(--border); }
+.map-popup-company { color: var(--muted); font-size: 0.75rem; }
+.leaflet-container a.map-popup-title { color: var(--text); font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; }
+.map-popup-meta, .map-popup-address { color: var(--muted); font-size: 0.75rem; }
+.leaflet-container a.map-popup-google { color: var(--accent); font-size: 0.8rem; }

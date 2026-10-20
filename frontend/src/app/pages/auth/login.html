@@ -1,0 +1,17 @@
+<!-- Log in form: username + password (logic: login.ts). -->
+<section class="auth-card">
+  <h1>Log in</h1>
+  <p class="muted">Welcome back to JobTest.</p>
+
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>Username <input formControlName="username" autocomplete="username" autocapitalize="none" spellcheck="false" /></label>
+    <label>Password <input type="password" formControlName="password" autocomplete="current-password" /></label>
+    <button class="btn" type="submit" [disabled]="form.invalid || busy()">
+      {{ busy() ? 'Logging in…' : 'Log in' }}
+    </button>
+  </form>
+
+  <p class="muted center">No account? <a routerLink="/signup">Sign up</a></p>
+</section>

@@ -1,3 +1,4 @@
+<!-- Post / edit a job: preview, required fields, address check, optional details, screening questions, actions (logic: job-form.ts). -->
 <section class="page profile job-form">
   @if (loading()) {
     <p class="muted">Loading…</p>
@@ -9,7 +10,35 @@
 
     @if (error()) { <p class="error">{{ error() }}</p> }
 
-    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <!-- Preview: the job as applicants will see it (nothing is saved yet) -->
+    @if (preview(); as p) {
+      <div class="job-preview">
+        <p class="muted small">Preview · {{ p.company }}</p>
+        <h2>{{ p.title }}</h2>
+        <p class="muted">
+          {{ p.location }}@if (p.workplace) { · {{ p.workplace }} } · {{ p.role }}@if (p.type) { · {{ p.type }} }@if (p.level) { · {{ p.level }} }
+          · {{ salaryRange(p) }}
+        </p>
+        <p class="small">{{ p.address }}</p>
+        @if (p.skills.length) {
+          <div class="tags">@for (sk of p.skills; track sk) { <span class="tag">{{ sk }}</span> }</div>
+        }
+        <p class="prewrap">{{ p.description }}</p>
+        @if (p.questions.length) {
+          <p class="muted small">{{ p.questions.length }} screening question{{ p.questions.length === 1 ? '' : 's' }}</p>
+        }
+        <div class="resume-actions">
+          <button class="btn" type="button" [disabled]="saving()" (click)="submit('post')">{{ jobId() && editingStatus() !== 'draft' ? 'Save changes' : 'Post job' }}</button>
+          @if (!jobId() || editingStatus() === 'draft') {
+            <button class="btn btn-outline" type="button" [disabled]="saving()" (click)="submit('draft')">Save as draft</button>
+          }
+          <button class="link" type="button" (click)="closePreview()">Back to editing</button>
+        </div>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate [hidden]="preview()">
+      <!-- Required fields: title, role, salary, address, description -->
       <h2>Required</h2>
       <label>
         Job title
@@ -47,6 +76,7 @@
         <span class="small muted">Paste the full street address exactly as it appears on Google Maps.</span>
         @if (invalid('address')) { <span class="error small">Add the job's street address.</span> }
       </label>
+      <!-- Address check result and Google Maps preview -->
       <div class="address-check">
         @if (verified(); as place) {
           <span class="success small">✓ Found: {{ place.location }}</span>
@@ -73,6 +103,7 @@
         @if (invalid('description')) { <span class="error small">Add a description.</span> }
       </label>
 
+      <!-- Optional details used by the board's filters -->
       <h2>More details (optional)</h2>
       <p class="small muted">These help people find the job with the board's filters.</p>
 
@@ -118,6 +149,7 @@
         <input type="checkbox" formControlName="visaSponsorship" /> Sponsors visas
       </label>
 
+      <!-- Screening questions editor -->
       <h2>Screening questions (optional)</h2>
       <p class="small muted">
         Questions applicants answer when they apply, like on Indeed or LinkedIn. Mark a question as a
@@ -126,10 +158,21 @@
       <app-question-editor [(questions)]="questions" />
       @for (problem of questionErrors(); track problem) { <p class="error small">{{ problem }}</p> }
 
+      <label>
+        Closes on (optional)
+        <input type="date" formControlName="expiresOn" />
+        <span class="small muted">The job leaves the board automatically after this day.</span>
+      </label>
+
+      <!-- Actions: preview, post / publish, save as draft, cancel -->
       <div class="resume-actions">
         <button class="btn" type="submit" [disabled]="saving()">
-          {{ saving() ? 'Saving…' : jobId() ? 'Save changes' : 'Post job' }}
+          {{ saving() ? 'Saving…' : !jobId() ? 'Post job' : editingStatus() === 'draft' ? 'Publish' : 'Save changes' }}
         </button>
+        @if (!jobId() || editingStatus() === 'draft') {
+          <button class="btn btn-outline" type="button" [disabled]="saving()" (click)="submit('draft')">Save as draft</button>
+        }
+        <button class="btn btn-outline" type="button" [disabled]="saving()" (click)="showPreview()">Preview</button>
         <a [routerLink]="['/account']" [queryParams]="{ tab: 'company' }">Cancel</a>
       </div>
     </form>

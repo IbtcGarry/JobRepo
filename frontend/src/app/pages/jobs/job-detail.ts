@@ -1,71 +1,40 @@
-import { Component, computed, inject, input, resource } from '@angular/core';
+// A job's page (/jobs/:id): facts, address with a Google Maps link, skills, description,
+// and Apply (or "You applied" / "This job is closed"). Owners and managers get View applicants.
+
+import { Component, computed, effect, inject, input, resource } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { ApplicationService } from '../../core/application.service';
 import { AuthService } from '../../core/auth.service';
 import { googleMapsUrl } from '../../core/geocode';
 import { JobService } from '../../core/job.service';
+import { ReportButton } from '../../shared/report-button';
+import { SaveJobButton } from '../../shared/save-job-button';
 import { ProfileService, canEditCompany } from '../../core/profile.service';
-import { jobFacts, postedAgo } from '../../data/job-format';
+import { isExpired, jobFacts, postedAgo } from '../../data/job-format';
 
+/** Job page (/jobs/:id): facts, address, skills, description, and Apply / Save / Message employer / Report. */
 @Component({
   selector: 'app-job-detail',
-  imports: [RouterLink],
-  template: `
-    <section class="page job-detail">
-      @if (job.isLoading()) {
-        <p class="muted">Loading…</p>
-      } @else if (job.error()) {
-        <p class="error">Couldn't load this job.</p>
-      } @else if (job.value(); as j) {
-        <p class="muted small">
-          <a [routerLink]="['/company', j.companyId]">{{ j.company }}</a> · Posted {{ ago() }}
-        </p>
-        <h1>{{ j.title }}</h1>
-        <div class="facts">
-          @for (fact of facts(); track fact) { <span>{{ fact }}</span> }
-        </div>
-        <p class="small">
-          {{ j.address }} · <a [href]="mapsUrl(j.address)" target="_blank" rel="noopener">Open in Google Maps</a>
-        </p>
-        @if (j.skills.length) {
-          <div class="tags">
-            @for (s of j.skills; track s) { <span class="tag">{{ s }}</span> }
-          </div>
-        }
-        <div class="actions">
-          @if (canManage.value()) {
-            <a class="btn btn-outline" [routerLink]="['/company', j.companyId, 'jobs', j.id, 'applicants']">View applicants</a>
-          }
-          @if (j.status === 'closed') {
-            <span class="closed-tag">This job is closed</span>
-          } @else if (!auth.user()) {
-            <a class="btn" routerLink="/login" [queryParams]="{ redirect: '/jobs/' + j.id + '/apply' }">Log in to apply</a>
-          } @else if (mine.value()) {
-            <span class="applied">✓ You applied</span>
-          } @else if (!mine.isLoading()) {
-            <a class="btn" [routerLink]="['/jobs', j.id, 'apply']">Apply</a>
-          }
-        </div>
-        <h2>About the job</h2>
-        <p class="description">{{ j.description }}</p>
-      } @else {
-        <h1>Job not found</h1>
-        <a routerLink="/">Back to all jobs</a>
-      }
-    </section>
-  `,
+  imports: [RouterLink, DatePipe, SaveJobButton, ReportButton],
+  templateUrl: './job-detail.html',
 })
 export class JobDetail {
+  /** Job ID from the address (/jobs/:id). */
   readonly id = input.required<string>();
 
+  // Shared services this page uses (inject borrows the one app-wide copy).
   protected readonly auth = inject(AuthService);
   private readonly jobs = inject(JobService);
   private readonly applications = inject(ApplicationService);
   private readonly profiles = inject(ProfileService);
+  /** Google Maps link helper for the address line. */
   protected readonly mapsUrl = googleMapsUrl;
 
+  /** The job, reloaded when the address changes. */
   protected readonly job = resource({ params: () => this.id(), loader: ({ params }) => this.jobs.get(params) });
+  /** The user's application to this job, if any (shows "You applied"). */
   protected readonly mine = resource({
     params: () => ({ jobId: this.id(), userId: this.auth.user()?.$id }),
     loader: ({ params }) => (params.userId ? this.applications.findMine(params.jobId, params.userId) : Promise.resolve(null)),
@@ -76,6 +45,19 @@ export class JobDetail {
     loader: async ({ params }) =>
       !!params.companyId && !!params.userId && canEditCompany(await this.profiles.get(params.userId), params.companyId),
   });
+  /** True once the job's closing date has passed. */
+  protected readonly expired = computed(() => (this.job.value() ? isExpired(this.job.value()!) : false));
+
+  /** Counts a view when a signed-in user opens the page. */
+  constructor() {
+    // Count one view each time a signed-in user opens a job page.
+    effect(() => {
+      if (this.auth.user()) void this.jobs.countView(this.id());
+    });
+  }
+
+  /** The fact line under the title. */
   protected readonly facts = computed(() => (this.job.value() ? jobFacts(this.job.value()!) : []));
+  /** "Posted 2d ago" text. */
   protected readonly ago = computed(() => (this.job.value() ? postedAgo(this.job.value()!.postedAt) : ''));
 }

@@ -1,0 +1,26 @@
+<!-- Team: members, invite form, pending invites. -->
+<div class="posted-head"><h2>Team</h2></div>
+<ul class="job-list">
+  @for (m of team.value()?.members; track m.id) {
+    <li class="alert-row">
+      <a [routerLink]="['/profile', m.id]"><strong>{{ m.username || 'user' }}</strong></a>
+      <span class="muted small">{{ roleText(m.companyRole) }}</span>
+    </li>
+  }
+  @for (i of team.value()?.invites; track i.id) {
+    <li class="alert-row">
+      <span>{{ i.username }} <span class="muted small">· invited as {{ roleText(i.role) }}</span></span>
+      <button type="button" class="link small" (click)="cancel(i)">Cancel invite</button>
+    </li>
+  }
+</ul>
+
+<form class="invite-form" (ngSubmit)="invite()">
+  <input name="username" [(ngModel)]="username" placeholder="Username to invite" autocapitalize="none" aria-label="Username to invite" />
+  <select name="role" [(ngModel)]="role" aria-label="Role">
+    <option value="manager">Manager (can post jobs, review applicants)</option>
+    <option value="member">Member</option>
+  </select>
+  <button class="btn btn-sm" type="submit" [disabled]="busy() || !username.trim()">{{ busy() ? 'Inviting…' : 'Invite' }}</button>
+</form>
+@if (message(); as m) { <p class="small" [class.success]="m.ok" [class.error]="!m.ok">{{ m.text }}</p> }

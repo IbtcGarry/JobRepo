@@ -1,0 +1,24 @@
+<!-- A conversation with one person. -->
+<section class="page thread-page">
+  <p class="muted small"><a routerLink="/messages">‹ All messages</a></p>
+  <h1><a [routerLink]="['/profile', userId()]">{{ otherName() }}</a></h1>
+
+  <!-- Messages, oldest at the top -->
+  <div class="thread" #list>
+    @for (m of messages(); track m.id) {
+      <div class="bubble" [class.mine]="m.fromId === auth.user()?.$id">
+        <p class="prewrap">{{ m.body }}</p>
+        <span class="muted small">{{ m.sentAt | date: 'MMM d, h:mm a' }}</span>
+      </div>
+    } @empty {
+      <p class="muted">No messages yet — say hello.</p>
+    }
+  </div>
+
+  <!-- Reply box -->
+  <form class="reply" (ngSubmit)="send()">
+    <textarea name="draft" rows="2" maxlength="5000" [(ngModel)]="draft" placeholder="Write a message…" (keydown.enter)="onEnter($event)"></textarea>
+    <button class="btn" type="submit" [disabled]="sending() || !draft.trim()">{{ sending() ? 'Sending…' : 'Send' }}</button>
+  </form>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+</section>

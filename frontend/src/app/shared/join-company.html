@@ -1,0 +1,24 @@
+<!-- Invitations, then "create a company". -->
+@if (myInvites.value()?.length) {
+  <h2>Invitations</h2>
+  <ul class="job-list">
+    @for (i of myInvites.value(); track i.id) {
+      <li class="alert-row">
+        <span><strong>{{ i.companyName }}</strong> <span class="muted small">invited you as {{ i.role }} · from {{ i.invitedBy }}</span></span>
+        <span class="resume-actions">
+          <button class="btn btn-sm" type="button" [disabled]="busy()" (click)="accept(i)">Accept</button>
+          <button class="link small" type="button" [disabled]="busy()" (click)="decline(i)">Decline</button>
+        </span>
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="muted">You're not part of a company yet. If one invites you, the invitation shows up here.</p>
+}
+
+<h2>Create a company</h2>
+<form class="invite-form" (ngSubmit)="create()">
+  <input name="companyName" [(ngModel)]="companyName" maxlength="120" placeholder="Company name" aria-label="Company name" />
+  <button class="btn btn-sm" type="submit" [disabled]="busy() || !companyName.trim()">{{ busy() ? 'Creating…' : 'Create company' }}</button>
+</form>
+@if (error()) { <p class="error small">{{ error() }}</p> }

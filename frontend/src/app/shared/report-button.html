@@ -1,0 +1,14 @@
+<!-- Report link and its reason form (logic: report-button.ts). -->
+@if (auth.user()) {
+  <span class="report">
+    <button type="button" class="link small" (click)="toggle()">{{ open() ? 'Cancel report' : 'Report' }}</button>
+    @if (open()) {
+      <!-- Reason box -->
+      <form class="report-form" (ngSubmit)="send()">
+        <textarea name="reason" rows="3" maxlength="1000" [(ngModel)]="reason" placeholder="What's wrong? (spam, offensive, fake, …)"></textarea>
+        <button class="btn btn-sm" type="submit" [disabled]="sending() || !reason.trim()">{{ sending() ? 'Sending…' : 'Send report' }}</button>
+      </form>
+    }
+    @if (message()) { <span class="muted small">{{ message() }}</span> }
+  </span>
+}

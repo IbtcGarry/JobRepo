@@ -29,7 +29,10 @@ function job(overrides: Partial<Job>): Job {
     postedAt: '2026-10-17T12:00:00Z',
     status: 'open',
     postedByName: 'garry',
+    postedById: null,
     questions: [],
+    views: 0,
+    expiresAt: null,
     ...overrides,
   };
 }

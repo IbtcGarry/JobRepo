@@ -1,9 +1,11 @@
+<!-- Company admin dashboard: totals, tabs, and a table of every job (logic: company-admin.ts). -->
 <section class="page admin">
   @if (data.isLoading() && !data.value()) {
     <p class="muted">Loading…</p>
   } @else if (data.error()) {
     <p class="error">Couldn't load the admin page.</p>
   } @else if (!data.value()?.company) {
+    <!-- States: loading, error, not found, not allowed -->
     <h1>Company not found</h1>
   } @else if (!data.value()!.allowed) {
     <h1>Admin</h1>
@@ -11,6 +13,7 @@
     <a [routerLink]="['/company', id()]">Back to the company page</a>
   } @else {
     @let company = data.value()!.company!;
+    <!-- Header: logo, name, Post a job / Company page / Moderation -->
     <div class="company-head">
       <app-avatar [name]="company.name" [url]="companies.logoUrl(company.logoFileId)" size="medium" />
       <div>
@@ -20,25 +23,33 @@
       <div class="edit resume-actions">
         <a class="btn btn-sm" [routerLink]="['/company', company.id, 'jobs', 'new']">Post a job</a>
         <a class="btn btn-outline btn-sm" [routerLink]="['/company', company.id]">Company page</a>
+        <!-- Site moderators only: reports from all users across the site -->
+        @if (profiles.me()?.siteAdmin) { <a class="btn btn-outline btn-sm" routerLink="/admin">Moderation</a> }
       </div>
     </div>
 
+    <!-- Totals tiles -->
     <div class="tiles">
       <div><strong>{{ summary().total }}</strong><span>Jobs</span></div>
       <div><strong>{{ summary().open }}</strong><span>Open</span></div>
       <div><strong>{{ summary().closed }}</strong><span>Closed</span></div>
+      <div><strong>{{ summary().drafts }}</strong><span>Drafts</span></div>
+      <div><strong>{{ summary().views }}</strong><span>Views</span></div>
       <div><strong>{{ summary().applicants }}</strong><span>Applicants</span></div>
       <div><strong>{{ summary().posters }}</strong><span>Posters</span></div>
     </div>
 
+    <!-- All / Open / Closed / Drafts tabs -->
     <div class="tabs" role="tablist">
-      <button type="button" role="tab" [class.active]="view() === 'all'" (click)="view.set('all')">All ({{ summary().total }})</button>
-      <button type="button" role="tab" [class.active]="view() === 'open'" (click)="view.set('open')">Open ({{ summary().open }})</button>
-      <button type="button" role="tab" [class.active]="view() === 'closed'" (click)="view.set('closed')">Closed ({{ summary().closed }})</button>
+      <button type="button" role="tab" [class.active]="view() === 'all'" (click)="showView('all')">All ({{ summary().total }})</button>
+      <button type="button" role="tab" [class.active]="view() === 'open'" (click)="showView('open')">Open ({{ summary().open }})</button>
+      <button type="button" role="tab" [class.active]="view() === 'closed'" (click)="showView('closed')">Closed ({{ summary().closed }})</button>
+      <button type="button" role="tab" [class.active]="view() === 'draft'" (click)="showView('draft')">Drafts ({{ summary().drafts }})</button>
     </div>
 
     @if (error()) { <p class="error">{{ error() }}</p> }
 
+    <!-- Jobs table: one row per job with views, applicants, screening, status and actions -->
     <div class="table-wrap">
       <table class="admin-table">
         <thead>
@@ -47,6 +58,7 @@
             <th>Posted by</th>
             <th>Date</th>
             <th>Salary</th>
+            <th>Views</th>
             <th>Applicants</th>
             <th>Screening</th>
             <th>Status</th>
@@ -63,6 +75,7 @@
               <td>{{ job.postedByName || '—' }}</td>
               <td>{{ job.postedAt | date: 'mediumDate' }}</td>
               <td>{{ salaryRange(job) || '—' }}</td>
+              <td>{{ job.views }}</td>
               <td>
                 <a class="btn btn-sm" [routerLink]="['/company', company.id, 'jobs', job.id, 'applicants']">
                   View applicants ({{ count(job) }})
@@ -78,10 +91,11 @@
                 }
               </td>
               <td>
-                <span class="status" [class.open]="job.status === 'open'">{{ job.status === 'open' ? 'Open' : 'Closed' }}</span>
+                <span class="status" [class.open]="job.status === 'open'" [class.draft]="job.status === 'draft'">{{ statusText(job) }}</span>
                 <button type="button" class="link small" [disabled]="busy() === job.id" (click)="toggleStatus(job)">
-                  {{ job.status === 'open' ? 'Close' : 'Reopen' }}
+                  {{ job.status === 'open' ? 'Close' : job.status === 'draft' ? 'Publish' : 'Reopen' }}
                 </button>
+                @if (job.expiresAt) { <div class="muted small">Closes {{ job.expiresAt | date: 'mediumDate' }}</div> }
               </td>
               <td class="row-actions">
                 <a [routerLink]="['/jobs', job.id]">View</a>
@@ -91,7 +105,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="8" class="empty muted">
+              <td colspan="9" class="empty muted">
                 {{ view() === 'all' ? 'No jobs posted under this company yet.' : 'No ' + view() + ' jobs.' }}
               </td>
             </tr>

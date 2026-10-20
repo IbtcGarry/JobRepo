@@ -1,0 +1,41 @@
+<!-- Site moderation: user reports. -->
+<section class="page admin">
+  <div class="posted-head">
+    <h1>Moderation</h1>
+    <div class="segmented" role="tablist">
+      <button type="button" role="tab" [class.active]="onlyOpen()" (click)="showOpenOnly(true)">Open</button>
+      <button type="button" role="tab" [class.active]="!onlyOpen()" (click)="showOpenOnly(false)">All</button>
+    </div>
+  </div>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Reported</th><th>Reason</th><th>By</th><th>Date</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        @for (r of reports.value(); track r.id) {
+          <tr>
+            <td><span class="muted small">{{ r.targetType }}</span><br /><a [routerLink]="link(r)">{{ r.targetName }}</a></td>
+            <td class="prewrap">{{ r.reason }}</td>
+            <td><a [routerLink]="['/profile', r.reporterId]">{{ r.reporterName }}</a></td>
+            <td>{{ r.createdAt | date: 'mediumDate' }}</td>
+            <td><span class="status" [class.open]="r.status === 'open'">{{ r.status }}</span></td>
+            <td class="row-actions">
+              @if (r.status === 'open') {
+                @if (r.targetType === 'job') {
+                  <button type="button" class="link" [disabled]="busy() === r.id" (click)="closeJob(r)">Close job</button>
+                }
+                <button type="button" class="link" [disabled]="busy() === r.id" (click)="setStatus(r, 'resolved')">Resolve</button>
+                <button type="button" class="link" [disabled]="busy() === r.id" (click)="setStatus(r, 'dismissed')">Dismiss</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty muted">{{ reports.isLoading() ? 'Loading…' : 'No reports.' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

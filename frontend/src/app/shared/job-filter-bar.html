@@ -1,0 +1,117 @@
+<!-- Row of filter dropdowns: checkbox groups, Salary, Skills, Date posted, Perks, Clear all (logic: job-filter-bar.ts). -->
+<div class="filterbar">
+  <!-- Checkbox dropdowns: Role, Workplace, Job type, Experience, Company size -->
+  @for (group of groups; track group.key) {
+    <div class="dropdown">
+      <button
+        type="button"
+        class="trigger"
+        [class.on]="filters()[group.key].length"
+        [attr.aria-expanded]="openMenu() === group.key"
+        (click)="toggleMenu(group.key)"
+      >
+        {{ group.label }}
+        @if (filters()[group.key].length) { <span class="badge">{{ filters()[group.key].length }}</span> }
+        <span class="caret">▾</span>
+      </button>
+      @if (openMenu() === group.key) {
+        <div class="menu">
+          @for (option of group.options; track option) {
+            <label class="option">
+              <input type="checkbox" [checked]="isOn(group.key, option)" (change)="toggle(group.key, option)" />
+              {{ option }}
+            </label>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Salary: pick a minimum -->
+  <div class="dropdown">
+    <button type="button" class="trigger" [class.on]="filters().minSalary" [attr.aria-expanded]="openMenu() === 'salary'" (click)="toggleMenu('salary')">
+      {{ filters().minSalary ? salaryLabel(filters().minSalary) : 'Salary' }} <span class="caret">▾</span>
+    </button>
+    @if (openMenu() === 'salary') {
+      <div class="menu">
+        @for (amount of salaryOptions; track amount) {
+          <label class="option">
+            <input type="radio" name="salary" [checked]="filters().minSalary === amount" (change)="pickSalary(amount)" />
+            {{ amount ? salaryLabel(amount) : 'Any salary' }}
+          </label>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Skills: type and press Enter -->
+  <div class="dropdown">
+    <button type="button" class="trigger" [class.on]="filters().skills.length" [attr.aria-expanded]="openMenu() === 'skills'" (click)="toggleMenu('skills')">
+      Skills
+      @if (filters().skills.length) { <span class="badge">{{ filters().skills.length }}</span> }
+      <span class="caret">▾</span>
+    </button>
+    @if (openMenu() === 'skills') {
+      <div class="menu wide">
+        <input
+          #skill
+          type="text"
+          placeholder="Type a skill, press Enter"
+          (keydown.enter)="addSkill(skill, $event)"
+        />
+        @if (filters().skills.length) {
+          <div class="chips">
+            @for (s of filters().skills; track s) {
+              <button type="button" class="active" (click)="removeSkill(s)" [attr.aria-label]="'Remove ' + s">{{ s }} ×</button>
+            }
+          </div>
+        } @else {
+          <p class="muted small">Jobs must list every skill you add.</p>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Date posted: pick a time range -->
+  <div class="dropdown">
+    <button type="button" class="trigger" [class.on]="filters().postedWithinDays" [attr.aria-expanded]="openMenu() === 'posted'" (click)="toggleMenu('posted')">
+      {{ filters().postedWithinDays ? postedLabel() : 'Date posted' }} <span class="caret">▾</span>
+    </button>
+    @if (openMenu() === 'posted') {
+      <div class="menu">
+        @for (p of postedOptions; track p.days) {
+          <label class="option">
+            <input type="radio" name="posted" [checked]="filters().postedWithinDays === p.days" (change)="pickPostedWithin(p.days)" />
+            {{ p.label }}
+          </label>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Perks: equity, visa sponsorship -->
+  <div class="dropdown">
+    <button
+      type="button"
+      class="trigger"
+      [class.on]="filters().equityOnly || filters().visaOnly"
+      [attr.aria-expanded]="openMenu() === 'perks'"
+      (click)="toggleMenu('perks')"
+    >
+      Perks
+      @if (+filters().equityOnly + +filters().visaOnly; as n) { <span class="badge">{{ n }}</span> }
+      <span class="caret">▾</span>
+    </button>
+    @if (openMenu() === 'perks') {
+      <div class="menu">
+        <label class="option"><input type="checkbox" [checked]="filters().equityOnly" (change)="setEquityOnly($any($event.target).checked)" /> Offers equity</label>
+        <label class="option"><input type="checkbox" [checked]="filters().visaOnly" (change)="setVisaOnly($any($event.target).checked)" /> Sponsors visas</label>
+      </div>
+    }
+  </div>
+
+  @if (activeCount()) {
+    <!-- Clear all (shown when any filter is on) -->
+    <button type="button" class="link clear" (click)="clear()">Clear all ({{ activeCount() }})</button>
+  }
+</div>

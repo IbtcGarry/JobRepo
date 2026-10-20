@@ -1,7 +1,11 @@
-// Screening questions employers attach to a job (like Indeed / LinkedIn), and applicants' answers.
+// Screening questions (like Indeed / LinkedIn): the question and answer types, ready-made
+// presets, checks before saving, required-answer checks, and must-have scoring.
+// Used by the job form, the apply page and the applicants pages. Tested in screening.spec.ts.
 
+/** The kinds of answer a screening question asks for. */
 export type QuestionType = 'yesno' | 'number' | 'text' | 'choice';
 
+/** One screening question an employer adds to a job. */
 export interface ScreeningQuestion {
   id: string;
   text: string;
@@ -20,6 +24,7 @@ export interface ScreeningQuestion {
 /** Answers keyed by question ID. Numbers and yes/no are stored as strings ("3", "Yes"). */
 export type Answers = Partial<Record<string, string>>;
 
+/** Labels for the answer-type menu in the question editor. */
 export const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
   { value: 'yesno', label: 'Yes / No' },
   { value: 'number', label: 'Number' },
@@ -27,6 +32,7 @@ export const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
   { value: 'choice', label: 'Multiple choice' },
 ];
 
+/** Most questions a job can have. */
 export const MAX_QUESTIONS = 10;
 
 /** Common questions from job sites, ready to add with one click. */
@@ -41,6 +47,7 @@ export const PRESET_QUESTIONS: Omit<ScreeningQuestion, 'id'>[] = [
   { text: 'Do you have a valid driver’s license?', type: 'yesno', options: [], required: true, mustHave: false, idealAnswer: null, minNumber: null },
 ];
 
+/** A blank question (Yes / No, required) with a fresh ID, optionally pre-filled. */
 export function newQuestion(base: Partial<ScreeningQuestion> = {}): ScreeningQuestion {
   return {
     id: Math.random().toString(36).slice(2, 10),

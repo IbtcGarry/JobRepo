@@ -1,0 +1,164 @@
+// Map search page (pages/map): controls, list / map split, price-tag pins, phone layout.
+
+/* ---------- Map search (pages/map) ---------- */
+.map-host { display: block; }
+.map-search { display: flex; flex-direction: column; height: calc(100vh - 65px); height: calc(100dvh - 65px); }
+
+.map-controls {
+  position: relative;
+  z-index: 20;
+  padding: 12px 16px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  .filterbar { margin: 10px 0 12px; }
+  > .error { margin: 6px 0 0; }
+}
+.map-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+
+  input[type='search'], select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font: inherit;
+    font-size: 0.9rem;
+    &:focus { outline: none; border-color: var(--accent); }
+  }
+  .back { color: var(--text); font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .keyword { flex: 1 1 220px; min-width: 0; }
+  .place { position: relative; display: flex; flex: 1 1 260px; gap: 6px; input { flex: 1; min-width: 0; } }
+  .radius { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--muted); &.disabled { opacity: 0.5; } }
+}
+.place-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+  button { width: 100%; padding: 8px 10px; border: 0; background: none; font: inherit; font-size: 0.875rem; text-align: left; cursor: pointer; &:hover { background: var(--hover); } }
+}
+
+.map-split { display: grid; flex: 1; min-height: 0; grid-template-columns: minmax(360px, 480px) 1fr; }
+
+.map-list { overflow-y: auto; border-right: 1px solid var(--border); background: var(--bg); .pad { padding: 0 16px; } }
+.list-head, .list-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 12px 16px 0;
+}
+.list-head select { padding: 4px 6px; border: 1px solid var(--border); background: var(--card); font: inherit; }
+.list-sub { padding-bottom: 10px; }
+.follow { display: flex; align-items: center; gap: 6px; input { accent-color: var(--accent); } }
+.near-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px 2px 8px;
+  background: #e8efff;
+  color: #1d4ed8;
+  font-weight: 600;
+  button { border: 0; background: none; color: inherit; font-size: 1rem; line-height: 1; cursor: pointer; }
+}
+
+.map-cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  > li { margin: 0 12px 10px; border: 1px solid var(--border); background: var(--card); transition: border-color 0.15s, box-shadow 0.15s; }
+  > li.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  > li.empty { padding: 32px 16px; text-align: center; p { margin: 0 0 12px; } }
+  app-job-card { padding: 14px; gap: 12px; }
+}
+
+.map-pane { position: relative; min-width: 0; }
+.map { position: absolute; inset: 0; z-index: 0; }
+.search-area {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  z-index: 500;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+}
+
+/* Price-tag pins, like rent prices on an apartment site. */
+.pin-anchor { background: none; border: 0; }
+.price-pin, .cluster-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+  white-space: nowrap;
+  font: 700 0.8rem/1 'DM Sans', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+  transition: transform 0.1s;
+}
+.price-pin {
+  padding: 6px 9px;
+  border: 1.5px solid var(--accent);
+  background: #fff;
+  color: var(--text);
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    border: 6px solid transparent;
+    border-top-color: var(--accent);
+    border-bottom: 0;
+    transform: translateX(-50%);
+  }
+  &.active { background: var(--accent); color: #fff; transform: translate(-50%, calc(-100% - 6px)) scale(1.12); }
+}
+.cluster-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  background: var(--text);
+  color: #fff;
+  transform: translate(-50%, -50%);
+  &.active { background: var(--accent); }
+}
+
+.view-toggle { display: none; }
+
+@media (max-width: 860px) {
+  .map-split { grid-template-columns: 1fr; }
+  .map-list { border-right: 0; }
+  .map-pane { display: none; }
+  .map-split.show-map .map-list { display: none; }
+  .map-split.show-map .map-pane { display: block; }
+  .view-toggle {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    z-index: 600;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    padding: 10px 22px;
+    background: var(--text);
+    border-color: var(--text);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.3);
+  }
+}
+.map-cards app-job-card { flex-wrap: wrap; align-items: flex-start; }
+.map-cards app-job-card .side { width: 100%; justify-content: flex-end; }

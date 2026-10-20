@@ -1,3 +1,5 @@
+// Header styles (app.html): logo, links, message badge; links hide on phones.
+
 .topbar {
   border-bottom: 1px solid var(--border);
   background: var(--card);
@@ -50,6 +52,10 @@ nav {
 .me { display: flex; align-items: center; gap: 8px; }
 .session { margin-left: auto; }
 
-@media (max-width: 640px) {
+nav.session { gap: 16px; }
+.with-badge { position: relative; font-size: 1.05rem; }
+
+@media (max-width: 860px) {
   .links { display: none; }
+  .hide-sm { display: none; }
 }

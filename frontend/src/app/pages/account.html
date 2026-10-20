@@ -1,5 +1,7 @@
+<!-- Account page: picture and username, then the Profile and Company tabs (logic: account.ts). -->
 @if (auth.user(); as user) {
   <section class="page profile">
+    <!-- Header: profile picture with Add / Change / Remove photo -->
     <div class="identity">
       <app-avatar [name]="user.name" [url]="profiles.avatarUrl()" size="large" />
       <div>
@@ -17,6 +19,7 @@
         }
       </div>
     </div>
+    <!-- Username and member-since date -->
     <dl class="details">
       <dt>Username</dt><dd>{{ user.name }}</dd>
       <dt>Member since</dt><dd>{{ user.$createdAt | date: 'mediumDate' }}</dd>
@@ -28,13 +31,25 @@
     @if (loading()) {
       <p class="muted">Loading your profile…</p>
     } @else {
+      <!-- Profile / Company tab buttons -->
       <div class="tabs" role="tablist">
-        <button type="button" role="tab" [class.active]="tab() === 'profile'" (click)="tab.set('profile')">Profile</button>
-        <button type="button" role="tab" [class.active]="tab() === 'company'" (click)="tab.set('company')">Company</button>
+        <button type="button" role="tab" [class.active]="tab() === 'profile'" (click)="showTab('profile')">Profile</button>
+        <button type="button" role="tab" [class.active]="tab() === 'company'" (click)="showTab('company')">Company</button>
       </div>
 
       @if (tab() === 'company') {
+        <!-- Site moderators only: link to the site-wide moderation page -->
+        @if (profiles.me()?.siteAdmin) {
+          <div class="moderation-box">
+            <div>
+              <strong>Site moderation</strong>
+              <p class="muted small">Review reports about jobs, companies and profiles from all users.</p>
+            </div>
+            <a class="btn btn-outline btn-sm" routerLink="/admin">Open moderation</a>
+          </div>
+        }
         @if (company(); as c) {
+          <!-- Company tab: the user's company, their role, and Admin / Edit / View page -->
           <div class="company-card">
             <app-avatar [name]="c.name" [url]="companies.logoUrl(c.logoFileId)" size="large" />
             <div>
@@ -52,10 +67,14 @@
           @if (canEditCompany()) {
             <app-manage-jobs [companyId]="c.id" />
           }
+          @if (isOwner()) {
+            <app-company-team [company]="c" />
+          }
         } @else {
-          <p class="muted">You're not part of a company yet.</p>
+          <app-join-company (joined)="reloadCompany()" />
         }
       } @else {
+        <!-- Profile tab: occupation and bio -->
         <form [formGroup]="form" (ngSubmit)="save()">
           <h2>Profile</h2>
           <label>
@@ -74,6 +93,7 @@
           </div>
         </form>
 
+        <!-- Profile tab: resume upload, open, replace, remove -->
         <div class="resume">
           <h2>Resume</h2>
           @if (resume().resumeFileId; as fileId) {

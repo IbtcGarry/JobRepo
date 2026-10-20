@@ -1,3 +1,8 @@
+// Map search (/map), apartment-site style: job list beside a map with salary "price tag"
+// pins, place search, Near me, distance radius, the board's filters, "Search as I move the map",
+// and the whole search saved in the page address. Template: jobs-map.html.
+// Map library: Leaflet (OpenStreetMap tiles). Logic it relies on: data/geo.ts, data/map-search.ts.
+
 import {
   AfterViewInit,
   Component,
@@ -15,6 +20,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 
+import { AlertService } from '../../core/alert.service';
+import { AuthService } from '../../core/auth.service';
 import { PlaceResult, googleMapsUrl, searchPlaces } from '../../core/geocode';
 import { JobService } from '../../core/job.service';
 import { salaryRange } from '../../data/job-format';
@@ -36,6 +43,7 @@ import { MapSearch, searchFromParams, searchToParams } from '../../data/map-sear
 import { JobCard } from '../../shared/job-card';
 import { JobFilterBar } from '../../shared/job-filter-bar';
 
+/** A matching job and its distance from the searched place (null when there is no place). */
 interface Row {
   job: Job;
   miles: number | null;
@@ -43,6 +51,7 @@ interface Row {
 
 /** Pins closer than this many screen pixels merge into a numbered cluster. */
 const CLUSTER_PX = 44;
+/** Starting view when nothing else is known: the whole United States. */
 const DEFAULT_VIEW = { lat: 39.5, lng: -98.35, zoom: 4 };
 
 /**
@@ -57,18 +66,25 @@ const DEFAULT_VIEW = { lat: 39.5, lng: -98.35, zoom: 4 };
   host: { class: 'map-host' },
 })
 export class JobsMap implements AfterViewInit {
+  // Shared services this page uses (inject borrows the one app-wide copy).
   private readonly jobService = inject(JobService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  protected readonly auth = inject(AuthService);
+  private readonly alerts = inject(AlertService);
+  /** The <div> the map is drawn into. */
   private readonly mapEl = viewChild.required<ElementRef<HTMLElement>>('map');
+  /** The job list, so a clicked pin can scroll its card into view. */
   private readonly listEl = viewChild<ElementRef<HTMLElement>>('list');
 
+  // Helpers the template uses.
   protected readonly radiusOptions = RADIUS_OPTIONS;
   protected readonly formatMiles = formatMiles;
 
   // --- Search state (mirrored to the URL) ---
   protected readonly search = signal<MapSearch>(searchFromParams(this.route.snapshot.queryParams));
+  /** Shortcut to the search's filters, for the filter bar and keyword box. */
   protected readonly filters = computed(() => this.search().filters);
 
   // --- Map state ---
@@ -80,16 +96,29 @@ export class JobsMap implements AfterViewInit {
   protected readonly bounds = signal<Bounds | null>(null);
   /** When off, moving the map shows a "Search this area" button instead of updating the list. */
   protected readonly followMap = signal(true);
+  /** True after the map moved with "Search as I move" off: shows "Search this area". */
   protected readonly movedSinceSearch = signal(false);
+  /** Current zoom level; pins re-cluster when it changes. */
   protected readonly zoom = signal(DEFAULT_VIEW.zoom);
 
   // --- UI state ---
   protected readonly hoveredId = signal<string | null>(null);
+  /** Job whose pin was clicked or "Show on map" was pressed. */
   protected readonly selectedId = signal<string | null>(null);
+  /** Phones show either the list or the map. */
   protected readonly mobileView = signal<'list' | 'map'>('list');
+  /** Job alert form: open or closed, the typed name, busy flag, and the result ("!" = error). */
+  protected readonly alertFormOpen = signal(false);
+  protected alertName = '';
+  protected readonly alertBusy = signal(false);
+  protected readonly alertMessage = signal('');
+  /** Text in the place search box. */
   protected placeQuery = this.search().near?.label ?? '';
+  /** Choices shown when a place search matches several places. */
   protected readonly placeResults = signal<PlaceResult[]>([]);
+  /** True while searching a place or getting the user's location. */
   protected readonly placeBusy = signal(false);
+  /** Message when a place can't be found or location is blocked. */
   protected readonly placeError = signal('');
 
   // --- Data ---
@@ -120,9 +149,12 @@ export class JobsMap implements AfterViewInit {
     return b ? this.matches().filter((r) => inBounds(r.job as Job & { lat: number; lng: number }, b)) : this.matches();
   });
 
+  /** Jobs that can't be shown because they have no map address. */
   protected readonly unplacedCount = computed(() => (this.jobs.value() ?? []).filter((j) => !hasCoords(j)).length);
+  /** How many filters (and the radius) are on, for the empty-results message. */
   protected readonly activeCount = computed(() => activeFilterCount(this.filters()) + (this.search().radius ? 1 : 0));
 
+  /** Wires up the automatic reactions below (URL sync, pins, highlights, radius, first fit). */
   constructor() {
     // Keep the URL in sync with the search (replaceUrl so Back leaves the map instead of stepping through moves).
     effect(() => {
@@ -161,10 +193,12 @@ export class JobsMap implements AfterViewInit {
     });
   }
 
+  /** True once the map has zoomed to fit the jobs on first load. */
   private fittedOnce = false;
   /** A fit requested while the map was hidden (phone list view); done once it's shown. */
   private pendingFit: Job[] | null = null;
 
+  /** Once the page is drawn: create the map, add tiles and layers, and listen for moves. */
   ngAfterViewInit() {
     const s = this.search();
     const view = s.view ?? (s.near ? { lat: s.near.lat, lng: s.near.lng, zoom: 11 } : DEFAULT_VIEW);
@@ -205,24 +239,35 @@ export class JobsMap implements AfterViewInit {
 
   // ---------- Search controls ----------
 
+  /** The filter bar changed: store the new filters. */
   protected setFilters(filters: JobFilters) {
     this.search.update((s) => ({ ...s, filters }));
   }
 
+  /** Sort menu: Newest, Highest salary or Closest. */
   protected setSort(sort: JobFilters['sort']) {
     this.search.update((s) => ({ ...s, filters: { ...s.filters, sort } }));
   }
 
+  /** Keyword box: job title, company or skill. */
   protected setQuery(query: string) {
     this.search.update((s) => ({ ...s, filters: { ...s.filters, query } }));
   }
 
+  /** Within menu: limit to N miles of the place and zoom to the circle. */
   protected setRadius(radius: number) {
     this.search.update((s) => ({ ...s, radius }));
     const near = this.search().near;
     if (near && radius) this.map?.fitBounds(L.latLng(near.lat, near.lng).toBounds(radius * 1609.34 * 2), { padding: [20, 20] });
   }
 
+  /** Place search box: Enter or the Search button. */
+  protected onPlaceSubmit(event: Event) {
+    event.preventDefault(); // Stay on the page instead of the browser submitting the form.
+    void this.findPlace();
+  }
+
+  /** Look the typed place up; go straight there, or show choices when it's ambiguous. */
   async findPlace() {
     this.placeError.set('');
     this.placeResults.set([]);
@@ -240,6 +285,7 @@ export class JobsMap implements AfterViewInit {
     }
   }
 
+  /** Use a found place: set it as the centre for distances and zoom to it. */
   protected goTo(place: PlaceResult) {
     this.placeResults.set([]);
     this.placeQuery = place.label;
@@ -252,6 +298,7 @@ export class JobsMap implements AfterViewInit {
     } else this.map?.setView([place.lat, place.lng], 12);
   }
 
+  /** ◎ Near me: ask the browser for the user's location and search around it. */
   protected useMyLocation() {
     this.placeError.set('');
     if (!('geolocation' in navigator)) return this.placeError.set('Your browser can’t share its location.');
@@ -269,6 +316,7 @@ export class JobsMap implements AfterViewInit {
     );
   }
 
+  /** × on the place chip: stop measuring distance and drop the radius. */
   protected clearPlace() {
     this.placeQuery = '';
     this.placeResults.set([]);
@@ -280,11 +328,13 @@ export class JobsMap implements AfterViewInit {
     }));
   }
 
+  /** Set the place to measure from and sort closest first. */
   private setNear(near: Place) {
     // Measuring from a place makes "closest first" the natural order.
     this.search.update((s) => ({ ...s, near, filters: { ...s.filters, sort: 'distance' } }));
   }
 
+  /** "Search as I move the map" checkbox. */
   protected toggleFollow(on: boolean) {
     this.followMap.set(on);
     if (on) this.applyBounds();
@@ -299,10 +349,12 @@ export class JobsMap implements AfterViewInit {
     this.movedSinceSearch.set(false);
   }
 
+  /** "Show all N": zoom out to fit every matching job. */
   protected showAll() {
     this.fitTo(this.matches().map((r) => r.job));
   }
 
+  /** "Clear search and filters" on the empty-results message. */
   protected clearEverything() {
     this.clearPlace();
     this.search.update((s) => ({ ...s, filters: { ...s.filters, query: '' } }));
@@ -311,6 +363,36 @@ export class JobsMap implements AfterViewInit {
 
   // ---------- List <-> map interaction ----------
 
+  /** Alert me: open the alert form, suggesting a name from the keyword and place. */
+  protected toggleAlertForm() {
+    this.alertFormOpen.update((o) => !o);
+    this.alertMessage.set('');
+    const { filters, near } = this.search();
+    this.alertName = [filters.query.trim(), near?.label].filter(Boolean).join(' near ') || 'New jobs';
+  }
+
+  /** Save alert: store this search (without the map position); the notifier function matches new jobs to it. */
+  async saveAlert(event: Event) {
+    event.preventDefault();
+    const { v: _view, ...params } = searchToParams(this.search());
+    this.alertBusy.set(true);
+    try {
+      await this.alerts.create(this.auth.user()!.$id, this.alertName, params);
+      this.alertFormOpen.set(false);
+      this.alertMessage.set('Alert saved — you\'ll get a notification when a matching job is posted. Manage alerts in Settings.');
+    } catch {
+      this.alertMessage.set('!Couldn\'t save the alert. Please try again.');
+    } finally {
+      this.alertBusy.set(false);
+    }
+  }
+
+  /** Phone-only Map / List button. */
+  protected toggleMobileView() {
+    this.mobileView.update((view) => (view === 'list' ? 'map' : 'list'));
+  }
+
+  /** Hovering a card highlights its pin (null when the mouse leaves). */
   protected hover(jobId: string | null) {
     this.hoveredId.set(jobId);
   }
@@ -325,6 +407,7 @@ export class JobsMap implements AfterViewInit {
     setTimeout(() => this.openPopupFor(job.id), 350);
   }
 
+  /** After every pan or zoom: save the view in the address and update the list (or offer "Search this area"). */
   private onMoveEnd() {
     const map = this.map!;
     const c = map.getCenter();
@@ -334,6 +417,7 @@ export class JobsMap implements AfterViewInit {
     else this.movedSinceSearch.set(true);
   }
 
+  /** Zoom the map to fit these jobs (waits if the map is hidden on a phone). */
   private fitTo(jobs: Job[]) {
     const pts = jobs.filter(hasCoords).map((j) => L.latLng(j.lat, j.lng));
     if (!this.map || !pts.length) return;
@@ -346,6 +430,7 @@ export class JobsMap implements AfterViewInit {
     else this.map.fitBounds(L.latLngBounds(pts), { padding: [48, 48], maxZoom: 13 });
   }
 
+  /** Scroll a job's card into view in the list. */
   private scrollToCard(jobId: string) {
     const card = this.listEl()?.nativeElement.querySelector<HTMLElement>(`[data-job="${jobId}"]`);
     card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -401,6 +486,7 @@ export class JobsMap implements AfterViewInit {
     this.highlightPins(this.hoveredId(), this.selectedId());
   }
 
+  /** Turn the hovered / selected job's pin orange and bring it to the front. */
   private highlightPins(hovered: string | null, selected: string | null) {
     for (const m of this.markers.values()) {
       const active = (!!hovered && m.jobIds.includes(hovered)) || (!!selected && m.jobIds.includes(selected));
@@ -409,12 +495,14 @@ export class JobsMap implements AfterViewInit {
     }
   }
 
+  /** Open the popup of the pin holding this job. */
   private openPopupFor(jobId: string) {
     for (const m of this.markers.values()) {
       if (m.jobIds.includes(jobId) && !m.cluster) m.marker.openPopup();
     }
   }
 
+  /** Build a pin: a white price tag (orange when active) or a dark numbered cluster circle. */
   private pinIcon(label: string, cluster: boolean, active: boolean): L.DivIcon {
     const span = document.createElement('span');
     span.className = `${cluster ? 'cluster-pin' : 'price-pin'}${active ? ' active' : ''}`;
@@ -423,6 +511,7 @@ export class JobsMap implements AfterViewInit {
     return L.divIcon({ className: 'pin-anchor', html: span, iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -34] });
   }
 
+  /** Draw the searched place's blue dot and, with a radius, its circle. */
   private drawRadius(near: Place | null, radius: number) {
     this.radiusLayer.clearLayers();
     if (!near) return;
@@ -468,6 +557,7 @@ export class JobsMap implements AfterViewInit {
   }
 }
 
+/** Make an HTML element with a class and plain text (text, so job details can't inject markup). */
 function el(tag: string, className: string, text = ''): HTMLElement {
   const node = document.createElement(tag);
   node.className = className;

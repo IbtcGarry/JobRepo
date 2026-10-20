@@ -1,0 +1,25 @@
+<!-- Sign up form: username + password (logic: signup.ts). -->
+<section class="auth-card">
+  <h1>Create your account</h1>
+  <p class="muted">Find your next role or your next hire.</p>
+
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Username
+      <input formControlName="username" autocomplete="username" autocapitalize="none" spellcheck="false" />
+      <span class="small muted">3–30 characters: lowercase letters, numbers, . _ -</span>
+    </label>
+    <label>
+      Password
+      <input type="password" formControlName="password" autocomplete="new-password" />
+      <span class="small muted">At least 8 characters.</span>
+    </label>
+    <button class="btn" type="submit" [disabled]="form.invalid || busy()">
+      {{ busy() ? 'Creating account…' : 'Sign up' }}
+    </button>
+  </form>
+
+  <p class="muted center">Already have an account? <a routerLink="/login">Log in</a></p>
+</section>

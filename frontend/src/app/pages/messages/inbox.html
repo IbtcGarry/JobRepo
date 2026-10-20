@@ -1,0 +1,18 @@
+<!-- All conversations. -->
+<section class="page">
+  <h1>Messages</h1>
+  <ul class="job-list">
+    @for (c of conversations(); track c.otherId) {
+      <li>
+        <a class="conversation" [routerLink]="['/messages', c.otherId]">
+          <strong>{{ c.otherName }}</strong>
+          @if (c.unread) { <span class="badge">{{ c.unread }}</span> }
+          <span class="muted small preview">{{ c.last.body }}</span>
+          <span class="muted small">{{ c.last.sentAt | date: 'MMM d, h:mm a' }}</span>
+        </a>
+      </li>
+    } @empty {
+      <li class="empty muted">No messages yet. Start one from someone's profile or an application.</li>
+    }
+  </ul>
+</section>

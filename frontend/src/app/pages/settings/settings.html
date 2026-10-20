@@ -1,0 +1,57 @@
+<!-- Account settings, one section per setting. -->
+<section class="page profile settings">
+  <h1>Settings</h1>
+  <p class="muted">Signed in as <strong>{{ auth.user()?.name }}</strong> · <a routerLink="/account">Account</a></p>
+
+  <!-- Roles -->
+  <h2>What you're here for</h2>
+  <label class="check"><input type="checkbox" [checked]="roles().includes('seeker')" (change)="toggleRole('seeker')" /> Looking for a job</label>
+  <label class="check"><input type="checkbox" [checked]="roles().includes('employer')" (change)="toggleRole('employer')" /> Hiring</label>
+  @if (messageFor('roles'); as m) { <p class="small" [class.success]="m.ok" [class.error]="!m.ok">{{ m.text }}</p> }
+
+  <!-- Public / private profile -->
+  <h2>Profile visibility</h2>
+  <label class="check">
+    <input type="checkbox" [checked]="isPublic()" (change)="setPublic($any($event.target).checked)" />
+    Show my profile to other users (<a [routerLink]="['/profile', auth.user()?.$id]">see it</a>)
+  </label>
+  @if (messageFor('visibility'); as m) { <p class="small" [class.success]="m.ok" [class.error]="!m.ok">{{ m.text }}</p> }
+
+  <!-- Username -->
+  <h2>Change username</h2>
+  <form (ngSubmit)="saveUsername()">
+    <label>New username <input name="newUsername" [(ngModel)]="newUsername" autocapitalize="none" autocomplete="username" /></label>
+    <label>Current password <input name="usernamePassword" type="password" [(ngModel)]="usernamePassword" autocomplete="current-password" /></label>
+    <div><button class="btn btn-sm" type="submit" [disabled]="busy() === 'username' || !newUsername || !usernamePassword">Change username</button></div>
+  </form>
+  @if (messageFor('username'); as m) { <p class="small" [class.success]="m.ok" [class.error]="!m.ok">{{ m.text }}</p> }
+
+  <!-- Password -->
+  <h2>Change password</h2>
+  <form (ngSubmit)="savePassword()">
+    <label>Current password <input name="currentPassword" type="password" [(ngModel)]="currentPassword" autocomplete="current-password" /></label>
+    <label>New password <input name="newPassword" type="password" [(ngModel)]="newPassword" autocomplete="new-password" /></label>
+    <div><button class="btn btn-sm" type="submit" [disabled]="busy() === 'password' || !currentPassword || !newPassword">Change password</button></div>
+  </form>
+  @if (messageFor('password'); as m) { <p class="small" [class.success]="m.ok" [class.error]="!m.ok">{{ m.text }}</p> }
+
+  <!-- Log out -->
+  <h2>Log out</h2>
+  <p class="small muted">Signs you out on this browser.</p>
+  <div><button class="btn btn-outline btn-sm" type="button" [disabled]="busy() === 'logout'" (click)="logout()">Log out</button></div>
+
+  <!-- Job alerts -->
+  <h2>Job alerts</h2>
+  <p class="small muted">Save a search on the <a routerLink="/map">map</a> to get a notification when a matching job is posted.</p>
+  <ul class="job-list">
+    @for (a of alerts(); track a.id) {
+      <li class="alert-row">
+        <a routerLink="/map" [queryParams]="a.params"><strong>{{ a.name }}</strong></a>
+        <button type="button" class="link small" [disabled]="busy() === 'alerts'" (click)="removeAlert(a)">Delete</button>
+      </li>
+    } @empty {
+      <li class="empty muted">No alerts yet.</li>
+    }
+  </ul>
+  @if (messageFor('alerts'); as m) { <p class="small" [class.success]="m.ok" [class.error]="!m.ok">{{ m.text }}</p> }
+</section>

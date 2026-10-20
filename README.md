@@ -2,6 +2,8 @@
 
 Live site: https://jobtest-beta.vercel.app · Detailed plan: [ROADMAP.md](ROADMAP.md)
 
+Docs: [Architecture diagram](docs/ARCHITECTURE.md) · [Developer guide](DEVELOPING.md) · [Roadmap](ROADMAP.md) · [Backend function](functions/README.md)
+
 ## ✅ Finished
 
 **Setup**
@@ -73,46 +75,42 @@ Live site: https://jobtest-beta.vercel.app · Detailed plan: [ROADMAP.md](ROADMA
 - [x] Applicants answer them on the apply page; required ones must be answered
 - [x] Applicants list shows "Meets must-haves" / "Missed N must-haves"; View application shows every answer with ✓ / ✗
 
+**Accounts & roles**
+- [x] Onboarding after sign-up: looking for a job, hiring, or both; employers can create their company there
+- [x] Public profiles (`/profile/:id`) with a public / private setting
+- [x] Settings (`/settings`): change username or password, roles, profile visibility, job alerts
+- [x] Create a company from the site; owners invite recruiters by username (manager / member); invites accepted on the account page
+- [x] Employer-only pages (`employerGuard`) and a moderator-only page (`moderatorGuard`)
+
+**Jobs**
+- [x] Save as draft, **Preview** before posting, Publish; optional closing date ("Closes on")
+- [x] View counts and drafts on the company admin page
+- [x] Expired jobs leave the board straight away and are closed by the hourly function
+- [x] **☆ Save** jobs (board, job page) and a Saved jobs page (`/saved`)
+- [x] Removing a job also removes its applications
+- [x] Job cards show the company's logo (the same one as on the company page)
+- [x] Example listings: one Umbrella Corporation job per role, covering every filter option
+
+**Applications**
+- [x] My applications (`/applications`): every application with its stage; Withdraw
+- [x] Pipeline board for employers: New → Reviewing → Interview → Offer → Hired / Rejected (drag and drop, or the stage menu)
+
+**Notifications, messaging, alerts, moderation**
+- [x] Notifications (new applicants, stage changes, invites, job alerts) are created by the Node.js function; there's no bell in the header (removed on request)
+- [x] Messages (`/messages`, live): message an employer from a job, an applicant from the applicants page, anyone from their profile
+- [x] Job alerts: **Alert me** on the map saves the search; you're notified when a matching job is posted
+- [x] Report a job, company or profile; moderators review reports at `/admin`
+
+**Backend (Node.js)**
+- [x] Appwrite Function `notifier` (Node.js 22, `functions/notifier/`) — notifications, job alerts, closing expired jobs; unit tested
+
+**Developer experience**
+- [x] Every page / component split into `.ts`, `.html` (and `.scss`); every function documented
+- [x] Styles split by area in `frontend/src/styles/`; all pages lazy-loaded
+- [x] `DEVELOPING.md` — how the code is organised, how to run, test, deploy, and common recipes
+
 ## ⬜ Not finished
 
-**Login system**
-- [ ] Employer-only pages (needs the roles from Step 3)
-
-**Jobs & applications**
-- [ ] Saved searches / alerts for a map area
-- [ ] Draw-your-own-area search
+- [ ] Real permissions — right now any signed-in user can read profiles / resumes / applications and edit any company's data; the guards only hide pages (fine for a dummy site)
+- [ ] Draw-your-own-area search on the map
 - [ ] Optional: switch the map to Google Maps (needs a Google Maps API key)
-- [ ] Applicants can't see their Interview / Rejected status yet ("My applications" page)
-- [ ] Removing a job doesn't remove its applications yet
-
-**Front page leftovers**
-- [ ] "For founders" link just scrolls to the job list
-
-**Step 3: Accounts**
-- [ ] Choose a role: job seeker, employer or both
-- [ ] Public profile page
-- [ ] Create a new company from the site; join a company / invite recruiters
-- [ ] Real permissions (right now any logged-in user can edit any company, its jobs, and read profiles / resumes / applications — fine for a dummy site)
-- [ ] Settings page
-
-**Step 4: Job posting (employers)**
-- [ ] Preview before posting
-- [ ] View and applicant counts on the employer's job list
-- [ ] Draft / open / closed status
-
-**Step 5: Job board (seekers)**
-- [ ] Saved jobs
-
-**Step 6: Applications**
-- [ ] "My applications" status tracker
-- [ ] A board where employers can move applicants through stages
-
-**Step 7: Polish**
-- [ ] Final design pass
-- [ ] Email the employer when someone applies
-- [ ] Automatically close expired jobs
-
-**Later**
-- [ ] Messaging
-- [ ] Job alerts
-- [ ] Admin tools for moderating posts

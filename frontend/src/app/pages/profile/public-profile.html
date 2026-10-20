@@ -1,0 +1,44 @@
+<!-- Someone's public profile. -->
+<section class="page application">
+  @if (data.isLoading()) {
+    <p class="muted">Loading…</p>
+  } @else if (!data.value()?.profile) {
+    <h1>Profile not found</h1>
+  } @else if (!data.value()!.profile!.isPublic && !isMe()) {
+    <h1>This profile is private</h1>
+  } @else {
+    @let p = data.value()!.profile!;
+    <!-- Header: picture, name, roles, occupation -->
+    <div class="identity">
+      <app-avatar [name]="p.username" [url]="p.avatarFileId ? profiles.avatarFileUrl(p.avatarFileId) : null" size="large" />
+      <div>
+        <h1>{{ p.username || 'Unnamed user' }}</h1>
+        <p class="muted">
+          @if (p.occupation) { {{ p.occupation }} }
+          @if (p.roles.length) { · {{ rolesText(p.roles) }} }
+        </p>
+        @if (data.value()!.company; as c) {
+          <p class="small">Works at <a [routerLink]="['/company', c.id]">{{ c.name }}</a></p>
+        }
+        <!-- Actions: edit own profile, or message / report someone else -->
+        <div class="resume-actions">
+          @if (isMe()) {
+            <a class="btn btn-outline btn-sm" routerLink="/account">Edit profile</a>
+          } @else if (auth.user()) {
+            <a class="btn btn-sm" [routerLink]="['/messages', p.id]">Message</a>
+            <app-report type="profile" [targetId]="p.id" [targetName]="p.username" />
+          }
+        </div>
+      </div>
+    </div>
+
+    <h2>About</h2>
+    @if (p.bio) { <p class="prewrap">{{ p.bio }}</p> } @else { <p class="muted">No bio yet.</p> }
+
+    <!-- Resume: visible to signed-in users -->
+    @if (p.resumeFileId && auth.user()) {
+      <h2>Resume</h2>
+      <a class="btn btn-outline btn-sm" [href]="profiles.resumeUrl(p.resumeFileId)" target="_blank" rel="noopener">Open {{ p.resumeName || 'resume' }}</a>
+    }
+  }
+</section>

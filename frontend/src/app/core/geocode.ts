@@ -1,3 +1,8 @@
+// Address and place lookup with OpenStreetMap (free, no key):
+// - verifyAddress: checks a job's street address is real and gets its coordinates (job form),
+// - searchPlaces: finds a city, ZIP code or address for the map search box,
+// - googleMapsUrl: a link that opens an address in Google Maps.
+
 /** A street address confirmed to exist, with coordinates for future map features. */
 export interface VerifiedAddress {
   /** Exactly what the employer entered (trimmed) — paste-able into Google Maps. */
@@ -19,6 +24,7 @@ interface NominatimResult {
  * any address OpenStreetMap can place at street level will also resolve on Google Maps.
  */
 export async function verifyAddress(input: string): Promise<VerifiedAddress> {
+  // Tidy the input: trim and collapse repeated spaces.
   const address = input.trim().replace(/\s+/g, ' ');
   if (!address) throw new Error('Add the job’s street address.');
 
@@ -51,10 +57,12 @@ export async function verifyAddress(input: string): Promise<VerifiedAddress> {
   };
 }
 
+/** A Google Maps link that searches for this exact address. */
 export function googleMapsUrl(address: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
+/** One match from the map's place search. */
 export interface PlaceResult {
   label: string;
   lat: number;

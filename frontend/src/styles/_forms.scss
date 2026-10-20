@@ -1,0 +1,39 @@
+// Forms: the login / sign-up card and the profile-style forms (account, settings, job form).
+
+.auth-card {
+  max-width: 400px;
+  margin: 8vh auto 64px;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  form { display: flex; flex-direction: column; gap: 14px; }
+  label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+  input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    font: inherit;
+    &:focus { outline: none; border-color: var(--accent); }
+  }
+}
+
+
+.profile {
+  max-width: 640px;
+  h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 40px 0 0; }
+
+  form { display: flex; flex-direction: column; gap: 14px; }
+  label:not(.btn) { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+  input:not([type='file']), textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    font: inherit;
+    &:focus { outline: none; border-color: var(--accent); }
+  }
+  textarea { resize: vertical; }
+}

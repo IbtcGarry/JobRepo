@@ -1,0 +1,51 @@
+<!-- A job's page: facts, address, skills, actions (apply, save, message, report), description. -->
+<section class="page job-detail">
+  @if (job.isLoading()) {
+    <p class="muted">Loading…</p>
+  } @else if (job.error()) {
+    <p class="error">Couldn't load this job.</p>
+  } @else if (job.value(); as j) {
+    <p class="muted small">
+      <a [routerLink]="['/company', j.companyId]">{{ j.company }}</a> · Posted {{ ago() }}
+    </p>
+    <h1>{{ j.title }}</h1>
+    <div class="facts">
+      @for (fact of facts(); track fact) { <span>{{ fact }}</span> }
+    </div>
+    <p class="small">
+      {{ j.address }} · <a [href]="mapsUrl(j.address)" target="_blank" rel="noopener">Open in Google Maps</a>
+    </p>
+    @if (j.skills.length) {
+      <div class="tags">
+        @for (s of j.skills; track s) { <span class="tag">{{ s }}</span> }
+      </div>
+    }
+    <div class="actions">
+      @if (canManage.value()) {
+        <a class="btn btn-outline" [routerLink]="['/company', j.companyId, 'jobs', j.id, 'applicants']">View applicants</a>
+      }
+      @if (j.status === 'closed' || expired()) {
+        <span class="closed-tag">This job is closed</span>
+      } @else if (j.status === 'draft') {
+        <span class="closed-tag">Draft — not posted yet</span>
+      } @else if (!auth.user()) {
+        <a class="btn" routerLink="/login" [queryParams]="{ redirect: '/jobs/' + j.id + '/apply' }">Log in to apply</a>
+      } @else if (mine.value()) {
+        <span class="applied">✓ You applied</span>
+      } @else if (!mine.isLoading()) {
+        <a class="btn" [routerLink]="['/jobs', j.id, 'apply']">Apply</a>
+      }
+      <app-save-job [jobId]="j.id" />
+      @if (auth.user() && j.postedById && j.postedById !== auth.user()!.$id) {
+        <a class="small" [routerLink]="['/messages', j.postedById]">Message employer</a>
+      }
+      <app-report type="job" [targetId]="j.id" [targetName]="j.title + ' · ' + j.company" />
+    </div>
+    @if (j.expiresAt && !expired()) { <p class="muted small">Applications close {{ j.expiresAt | date: 'mediumDate' }}</p> }
+    <h2>About the job</h2>
+    <p class="description">{{ j.description }}</p>
+  } @else {
+    <h1>Job not found</h1>
+    <a routerLink="/">Back to all jobs</a>
+  }
+</section>

@@ -1,5 +1,11 @@
+// The job board's filters as plain functions (no screen, no Appwrite), shared by the
+// front page and the map. Tested in job-filters.spec.ts.
+// Several options in one group match ANY of them; different groups must ALL match.
+
+import { hasEquity } from './job-format';
 import { CompanySize, Job, JobRole, JobType, Level, Workplace } from './jobs';
 
+/** Everything the job board and map can filter and sort by. */
 export interface JobFilters {
   query: string;
   location: string;
@@ -20,6 +26,7 @@ export interface JobFilters {
   sort: 'newest' | 'salary' | 'distance';
 }
 
+/** No filters: every job, newest first. */
 export const EMPTY_FILTERS: JobFilters = {
   query: '',
   location: '',
@@ -36,6 +43,7 @@ export const EMPTY_FILTERS: JobFilters = {
   sort: 'newest',
 };
 
+// Choices for the Salary (minimum, in USD per year) and Date posted dropdowns.
 export const SALARY_OPTIONS = [0, 50_000, 80_000, 100_000, 120_000, 150_000, 200_000];
 export const POSTED_OPTIONS = [
   { days: 0, label: 'Any time' },
@@ -46,6 +54,7 @@ export const POSTED_OPTIONS = [
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** Jobs that pass every filter, sorted newest first or by highest salary. */
 export function filterJobs(jobs: Job[], f: JobFilters, now = Date.now()): Job[] {
   const words = f.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const location = f.location.trim().toLowerCase();
@@ -65,7 +74,7 @@ export function filterJobs(jobs: Job[], f: JobFilters, now = Date.now()): Job[] 
       inList(f.sizes, job.companySize) &&
       (!f.minSalary || topSalary(job) >= f.minSalary) &&
       skills.every((s) => jobSkills.includes(s)) &&
-      (!f.equityOnly || job.equity !== null) &&
+      (!f.equityOnly || hasEquity(job)) &&
       (!f.visaOnly || job.visaSponsorship) &&
       Date.parse(job.postedAt) >= oldest
     );
@@ -98,6 +107,7 @@ function inList<T>(selected: T[], value: T | null): boolean {
   return selected.length === 0 || (value !== null && selected.includes(value));
 }
 
+/** The highest salary a job lists (0 when none), used for the salary filter and sort. */
 function topSalary(job: Job): number {
   return job.salaryMax ?? job.salaryMin ?? 0;
 }
